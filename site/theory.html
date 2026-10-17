@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theory &amp; Glossary — Hjelp Amanda</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .mex { display: grid; grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); gap: 6px; }
+  .mex button { border: 1px solid var(--line); background: rgba(255,255,255,.04); border-radius: 12px; padding: 8px 0; color: var(--ink); display: grid; gap: 2px; place-items: center; font-variant-numeric: tabular-nums; }
+  .mex button small { color: var(--mute); font-size: 10px; letter-spacing: .1em; }
+  .mex button b { font-family: var(--display); font-size: 22px; color: var(--gold); line-height: 1; }
+  .mex button.on { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 14%, transparent); }
+  .mex button.z b { color: var(--sea-2); }
+  .gl { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .gl .card { padding: 18px 20px; }
+  .gl h4 { margin: 0 0 4px; color: var(--gold); }
+  .gl p { margin: 0; color: var(--dim); font-size: 15px; }
+  .gl .card[hidden] { display: none; }
+  .search { width: 100%; max-width: 460px; }
+  .tree { font-family: var(--mono); font-size: 14px; line-height: 1.7; background: rgba(0,0,0,.3); border: 1px solid var(--line); border-radius: 14px; padding: 16px 20px; overflow-x: auto; white-space: pre; color: var(--dim); }
+  .tree b.p { color: var(--sea-2); } .tree b.n { color: var(--gold); }
+</style>
+</head>
+<body data-page="theory">
+<main>
+  <section class="container phead">
+    <div class="crumbs"><a href="index.html">Home</a> / Explore / Theory &amp; Glossary</div>
+    <span class="eyebrow">The vocabulary behind the trick</span>
+    <h1>Game theory, <span class="grad">briefly.</span></h1>
+    <p class="lead">The assignment is a textbook example of a <em>combinatorial game</em>. This page names the ideas — P- and N-positions, backward induction, Grundy numbers, Zermelo's theorem — and lets you poke at each.</p>
+  </section>
+
+  <div class="container with-toc">
+    <nav class="toc"><b>On this page</b><a href="#pn">P &amp; N positions</a><a href="#bi">Backward induction</a><a href="#grundy">Grundy numbers</a><a href="#zer">Zermelo</a><a href="#spe">Subgame perfection</a><a href="#gloss">Glossary</a><a href="#read">Further reading</a></nav>
+    <div>
+      <section id="pn" class="block tight">
+        <h2 class="reveal">P-positions and N-positions</h2>
+        <p class="lead reveal">Label every position by what happens to the player <b>about to move</b>.</p>
+        <div class="grid g2">
+          <div class="card reveal"><span class="tag">N-position</span><h3>Next player wins</h3><p class="dim">There is at least one move to a P-position. In our game: any <i>r</i> not divisible by 7.</p></div>
+          <div class="card reveal d1"><span class="tag" style="color:var(--sea-2)">P-position</span><h3>Previous player wins</h3><p class="dim">Every move leads to an N-position. In our game: 0, 7, 14, 21, …</p></div>
+        </div>
+        <div class="callout reveal"><b class="t">Two rules generate everything</b><p>(1) Terminal positions (no moves) are P. (2) A position is N iff some move reaches a P-position; otherwise P.</p></div>
+      </section>
+
+      <section id="bi" class="block tight">
+        <h2 class="reveal">Backward induction, drawn</h2>
+        <p class="lead reveal">Solve from the end of the game towards the start. For <i>r</i> = 10 (the assignment's example):</p>
+        <div class="tree reveal"><b class="p">0  P</b>   nobody can move
+<b class="n">1  N</b>   take 1 → 0
+<b class="n">2  N</b>   take 2 → 0     ·  …
+<b class="n">6  N</b>   take 6 → 0
+<b class="p">7  P</b>   every move lands on 1…6, all N
+<b class="n">8  N</b>   take 1 → 7
+<b class="n">9  N</b>   take 2 → 7
+<b class="n">10 N</b>   take 3 → 7   ← Amanda's opening in the example</div>
+        <p class="dim reveal" style="margin-top:14px">Each line is justified using only the lines above it. That's why a short table of the first 14 positions is already a proof sketch for all <i>n</i>.</p>
+      </section>
+
+      <section id="grundy" class="block tight">
+        <h2 class="reveal">Grundy numbers (the mex machine)</h2>
+        <p class="lead reveal">For each position, look at the Grundy numbers of the positions you can reach, and take the <b>mex</b>: the smallest non-negative integer that is <em>missing</em>. Zero ⇔ P-position. Here, the value cycles 0, 1, 2, 3, 4, 5, 6 and repeats.</p>
+        <div class="card reveal">
+          <div class="mex" id="mex"></div>
+          <div class="callout" style="margin-bottom:0" id="mexWhy"></div>
+        </div>
+        <p class="dim reveal" style="margin-top:14px">Why bother? Grundy numbers let you add games: if two heaps are played together, a position is a P-position iff the <b>XOR</b> of their Grundy values is 0 (Sprague–Grundy theorem). Our single line is the simplest case.</p>
+      </section>
+
+      <section id="zer" class="block tight">
+        <h2 class="reveal">Zermelo's theorem</h2>
+        <div class="callout reveal"><b class="t">Statement</b><p>In a finite two-player game of perfect information with no chance and no draws, exactly one of the players has a winning strategy.</p></div>
+        <p class="dim reveal">Proof idea: backward induction on the game tree. Each leaf is a win for someone; each inner node inherits “win for the mover” if some child is a win for the mover. Since there are no draws, every node ends up labelled for exactly one player.</p>
+        <p class="dim reveal">Because Amanda picks who goes first, she gets to be the player with the winning strategy at the root: <b>that's why the answer is “all n”</b> even without the arithmetic.</p>
+      </section>
+
+      <section id="spe" class="block tight">
+        <h2 class="reveal">Subgame-perfect equilibrium</h2>
+        <p class="lead reveal">Economists call backward induction's output a <em>subgame-perfect Nash equilibrium</em> (course MGMT4100 territory).</p>
+        <div class="grid g2">
+          <div class="card reveal"><h3>What it means here</h3><p class="dim">Amanda's strategy is optimal not just from the start but from <em>every</em> position where she may find herself, even ones reached by Bodil's mistakes. That's exactly the requirement “guaranteed strategy”.</p></div>
+          <div class="card reveal d1"><h3>Why it's credible</h3><p class="dim">There are no empty threats. Every move Amanda promises (“I'll take 7 − k”) is also the best move when the time comes. That's what makes it a robust guarantee rather than a hope.</p></div>
+        </div>
+      </section>
+
+      <section id="gloss" class="block tight">
+        <h2 class="reveal">Glossary</h2>
+        <input class="search reveal" id="q" type="search" placeholder="Search terms…" aria-label="Search glossary">
+        <div class="gl" id="gl" style="margin-top:18px"></div>
+      </section>
+
+      <section id="read" class="block tight">
+        <h2 class="reveal">Further reading</h2>
+        <ul class="dim reveal" style="padding-left:20px;line-height:1.9">
+          <li><i>Winning Ways for your Mathematical Plays</i> — Berlekamp, Conway &amp; Guy</li>
+          <li><i>Lessons in Play</i> — Albert, Nowakowski &amp; Wolfe</li>
+          <li><i>Game Theory</i> — any intro chapter on extensive-form games and backward induction</li>
+          <li>The numbers game <i>Nim</i> and <i>Wythoff's game</i> as relatives of this one</li>
+        </ul>
+      </section>
+      <div id="pagenav"></div>
+    </div>
+  </div>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const sol = AM.solve(AM.range(6), 28);
+  $('mex').innerHTML = Array.from({ length: 29 }, (_, r) => `<button type="button" data-r="${r}" class="${sol.grundy[r] === 0 ? 'z' : ''}"><small>r=${r}</small><b>${sol.grundy[r]}</b></button>`).join('');
+  function why(r) {
+    $('mex').querySelectorAll('button').forEach((b) => b.classList.toggle('on', +b.dataset.r === r));
+    if (r === 0) { $('mexWhy').innerHTML = '<b class="t">r = 0</b><p>No moves, so the set of reachable values is empty and its mex is <b>0</b>.</p>'; return; }
+    const reach = []; for (let k = 1; k <= 6 && k <= r; k++) reach.push(sol.grundy[r - k]);
+    $('mexWhy').innerHTML = `<b class="t">r = ${r}</b><p>Reachable positions ${[...Array(Math.min(6, r))].map((_, i) => r - 1 - i).join(', ')} have Grundy values {${reach.join(', ')}}. The smallest missing non-negative integer is <b>${sol.grundy[r]}</b>${sol.grundy[r] === 0 ? ' → a P-position (a trap).' : ' → N-position; the winning take is ' + (r % 7) + '.'}</p>`;
+  }
+  $('mex').onclick = (e) => { const b = e.target.closest('button'); if (b) why(+b.dataset.r); };
+  why(9);
+
+  const TERMS = [
+    ['Backward induction', 'Solving a game from the end towards the beginning, labelling each position using the already-labelled positions after it.'],
+    ['Combinatorial game', 'Two players, alternating moves, perfect information, no chance, finite play. Our prize line is one.'],
+    ['Extensive form', 'Describing a game as a tree of moves and outcomes.'],
+    ['Grundy number', 'The mex of the Grundy numbers of the positions you can move to. Zero means P-position.'],
+    ['Invariant', 'A property that holds before every turn of a process; Amanda keeps “multiple of 7 for Bodil”.'],
+    ['Mex', '“Minimum excluded value”: the smallest non-negative integer not in a set.'],
+    ['Misère play', 'The player who makes the last move loses (normal play: wins).'],
+    ['N-position', 'A position where the Next player (the one to move) wins with best play.'],
+    ['Nash equilibrium', 'A strategy profile where nobody gains by deviating alone. Subgame-perfect equilibria refine it.'],
+    ['Normal play', 'The player who makes the last move wins. Our game: whoever takes the last prize takes the book.'],
+    ['P-position', 'A position where the Previous player wins: the one about to move loses. In our game: multiples of 7.'],
+    ['Perfect information', 'Both players see everything. No hidden cards.'],
+    ['Period', 'How often the win/lose pattern repeats along n. For takes 1…m, the period is m + 1.'],
+    ['Pairing strategy', 'Answering each opponent move with a complementary one so that the total per round is constant (here 7).'],
+    ['Sprague–Grundy theorem', 'Every impartial game is equivalent to a Nim heap whose size is its Grundy number.'],
+    ['Strategy', 'A complete plan stating what to do in every position that might occur.'],
+    ['Subgame-perfect equilibrium', 'A strategy profile that is an equilibrium in every subgame; what backward induction produces.'],
+    ['Subtraction game', 'A game where you remove a number of objects from a set of allowed sizes.'],
+    ['Trap', 'Informal word on this site for a P-position: whoever has to move there loses.'],
+    ['Zermelo’s theorem', 'In finite perfect-information games without draws, one of the two players has a winning strategy.'],
+    ['Impartial game', 'Both players have the same moves available from any position (unlike chess).'],
+    ['Terminal position', 'A position with no legal moves. For us: 0 prizes left.'],
+  ];
+  function gloss(q) {
+    q = (q || '').toLowerCase();
+    $('gl').innerHTML = TERMS.filter((t) => !q || t[0].toLowerCase().includes(q) || t[1].toLowerCase().includes(q)).map((t) => `<div class="card"><h4>${t[0]}</h4><p>${t[1]}</p></div>`).join('') || '<p class="dim">No match.</p>';
+  }
+  gloss(); $('q').oninput = (e) => gloss(e.target.value);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Proof — Hjelp Amanda</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .thm { border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent); border-radius: 20px; padding: 28px 30px; background: linear-gradient(135deg, rgba(242,184,75,.1), rgba(238,90,54,.06)); }
+  .thm .tag { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+  .thm p.s { font-family: var(--serif); font-size: clamp(20px, 2.4vw, 28px); line-height: 1.3; margin: 10px 0 0; }
+  .board { display: grid; grid-template-columns: repeat(14, 1fr); gap: 6px; }
+  .bc { aspect-ratio: 1; border-radius: 10px; display: grid; place-items: center; font-size: 14px; font-variant-numeric: tabular-nums; background: rgba(255,255,255,.05); color: var(--mute); border: 1px solid var(--line); transition: .25s; position: relative; }
+  .bc.N { background: #3a2418; color: #ffcfa8; border-color: transparent; }
+  .bc.P { background: #123d46; color: #a9ecf5; border-color: transparent; }
+  .bc.cur { box-shadow: 0 0 0 2px var(--gold); transform: scale(1.12); z-index: 2; }
+  .bc.tgt { box-shadow: 0 0 0 2px var(--good); }
+  .why { min-height: 120px; }
+  .why b.k { color: var(--gold); }
+  .proofsteps { counter-reset: p; list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+  .proofsteps li { counter-increment: p; display: grid; grid-template-columns: 40px 1fr; gap: 14px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); }
+  .proofsteps li::before { content: counter(p); font-family: var(--display); font-size: 28px; color: var(--gold); line-height: 1; }
+  .proofsteps li p { margin: 0 0 .5em; } .proofsteps li p:last-child { margin: 0; }
+  .qed { text-align: right; font-size: 22px; color: var(--gold); margin-top: 10px; }
+  .vbox { display: grid; gap: 14px; }
+  .vrow { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .vres { font-family: var(--mono); font-size: 14px; background: rgba(0,0,0,.35); border: 1px solid var(--line); padding: 14px 16px; border-radius: 14px; min-height: 120px; white-space: pre-wrap; color: var(--dim); }
+  .vres .ok { color: var(--good); } .vres .bad { color: var(--bad); }
+  .hist { display: flex; gap: 4px; align-items: flex-end; height: 120px; padding: 6px 0; }
+  .hist div { flex: 1; background: linear-gradient(180deg, var(--gold), var(--accent)); border-radius: 6px 6px 0 0; position: relative; min-width: 8px; }
+  .hist div span { position: absolute; bottom: -22px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--mute); }
+  .flaw { padding: 20px; }
+  .flaw blockquote { margin: 10px 0; padding: 10px 14px; border-left: 3px solid var(--bad); background: rgba(255,93,108,.07); border-radius: 0 12px 12px 0; font-size: 16px; }
+  .flaw .ans { display: none; margin-top: 10px; } .flaw.open .ans { display: block; }
+  @media (max-width: 700px) { .board { grid-template-columns: repeat(7, 1fr); } }
+</style>
+</head>
+<body data-page="proof">
+<main>
+  <section class="container phead">
+    <div class="crumbs"><a href="index.html">Home</a> / Solve / The Proof</div>
+    <span class="eyebrow">Why it can't fail</span>
+    <h1>Proof, <span class="grad">three ways.</span></h1>
+    <p class="lead">A guarantee needs a reason. Below: the statement, an induction you can step through, a loop-invariant version, an existence argument that works even without knowing the strategy, and a brute-force check that doesn't use the formula at all.</p>
+  </section>
+
+  <div class="container with-toc">
+    <nav class="toc"><b>On this page</b><a href="#thm">The theorem</a><a href="#defs">Set-up</a><a href="#ind">Induction</a><a href="#inv">Invariant version</a><a href="#zermelo">Existence argument</a><a href="#brute">Brute-force check</a><a href="#unique">Uniqueness</a><a href="#flaws">Spot the flaw</a></nav>
+    <div>
+      <section id="thm" class="block tight">
+        <div class="thm reveal">
+          <span class="tag">Theorem</span>
+          <p class="s">For every number of prizes <i>n</i> ≥ 1, Amanda can guarantee the book. If 7 divides <i>n</i> she lets Bodil start; otherwise she starts and takes <i>n</i> mod 7. Afterwards she answers Bodil's take <i>k</i> with 7 − <i>k</i> (or takes everything when at most 6 remain).</p>
+        </div>
+      </section>
+
+      <section id="defs" class="block tight">
+        <h2 class="reveal">Set-up and reduction</h2>
+        <ol class="proofsteps">
+          <li class="reveal"><div><p><b>Positions.</b> The state of the game is fully described by <i>r</i>, the number of prizes still in the line, plus whose turn it is. Which prizes remain is forced: they are prizes 1…<i>r</i>.</p></div></li>
+          <li class="reveal"><div><p><b>The book.</b> Prize 1 is only reachable when the line has ≤ 6 prizes and the mover takes all of them. So <em>the player who makes the last take gets the book</em>.</p></div></li>
+          <li class="reveal"><div><p><b>Winning and losing positions.</b> Call <i>r</i> a <span class="chip good">winning position</span> if the player about to move from <i>r</i> can force making the last take, and a <span class="chip bad">losing position</span> if the opponent can. Position 0 is losing for the player to move: the previous player just took the last prize.</p></div></li>
+          <li class="reveal"><div><p><b>Goal.</b> Show <i>r</i> is losing exactly when 7 | <i>r</i>. Amanda then picks the role that is not losing.</p></div></li>
+        </ol>
+      </section>
+
+      <section id="ind" class="block tight">
+        <h2 class="reveal">1 · Strong induction (step through it)</h2>
+        <p class="lead reveal"><b>Claim.</b> For every <i>r</i> ≥ 0: the player to move at <i>r</i> loses ⇔ 7 | <i>r</i>.</p>
+        <div class="card reveal">
+          <div class="row" style="margin-bottom:16px"><button class="btn sm primary" id="iStep" type="button">Derive next →</button><button class="btn sm" id="iAuto" type="button">▶ Auto</button><button class="btn sm" id="iReset" type="button">Reset</button>
+            <span class="legend"><span><i class="sw win"></i>winning (N)</span><span><i class="sw lose"></i>losing (P)</span></span></div>
+          <div class="board" id="board"></div>
+          <div class="callout why" id="why" style="margin-bottom:0"></div>
+        </div>
+        <ol class="proofsteps" style="margin-top:22px">
+          <li class="reveal"><div><p><b>Base.</b> <i>r</i> = 0 is losing (nobody can move; the last take was made by the opponent), and 7 | 0.</p></div></li>
+          <li class="reveal"><div><p><b>Hypothesis.</b> Suppose the claim holds for all positions below some <i>r</i> ≥ 1.</p></div></li>
+          <li class="reveal"><div><p><b>Case 7 ∤ r.</b> Let <i>s</i> = <i>r</i> mod 7, so 1 ≤ <i>s</i> ≤ 6. The mover may legally take <i>s</i>, reaching <i>r</i> − <i>s</i>, a multiple of 7 below <i>r</i>. By hypothesis that position is losing for the next player. So <i>r</i> is winning.</p></div></li>
+          <li class="reveal"><div><p><b>Case 7 | r (r ≥ 7).</b> Any legal take is some <i>k</i> ∈ {1,…,6}. It leads to <i>r</i> − <i>k</i> ≡ −<i>k</i> ≢ 0 (mod 7), which by hypothesis is a winning position for the opponent. Every move loses, so <i>r</i> is losing.</p></div></li>
+        </ol>
+        <p class="qed">∎</p>
+      </section>
+
+      <section id="inv" class="block tight">
+        <h2 class="reveal">2 · The invariant version</h2>
+        <div class="g-split grid">
+          <div class="reveal">
+            <p class="dim">Instead of classifying every position, just follow Amanda's play and watch what stays true.</p>
+            <ol class="steps">
+              <li><b class="t">Setup.</b><p>If 7 ∤ <i>n</i>, Amanda's opening take makes the line a multiple of 7. If 7 | <i>n</i>, it already is, and Bodil moves.</p></li>
+              <li><b class="t">Invariant.</b><p>Before each of Bodil's turns, the remaining count is a positive multiple of 7.</p></li>
+              <li><b class="t">Preserved.</b><p>Bodil takes <i>k</i> ∈ [1, 6]. Amanda takes 7 − <i>k</i> ∈ [1, 6] (always legal and always possible, since at least 7 − <i>k</i> remain). Together: exactly 7 gone, so the count is a multiple of 7 again.</p></li>
+              <li><b class="t">Termination.</b><p>The count strictly decreases, so it reaches 0. It reaches 0 on Amanda's move, since before Bodil's turn it is always ≥ 7 > 6, so she can never empty the line.</p></li>
+            </ol>
+          </div>
+          <div class="reveal d1"><div class="card glow"><span class="tag">In one line</span><h3>Bodil never faces ≤ 6</h3><p class="dim">The invariant says Bodil always faces a multiple of 7, so at least 7. She can't clear it. Amanda eventually faces ≤ 6 and finishes. The book follows.</p></div></div>
+        </div>
+      </section>
+
+      <section id="zermelo" class="block tight">
+        <h2 class="reveal">3 · An existence argument (no arithmetic needed)</h2>
+        <div class="g-split grid">
+          <div class="reveal">
+            <p class="dim">There is a slicker reason that Amanda can win <em>every</em> <i>n</i>, which does not mention 7.</p>
+            <div class="callout"><b class="t">Zermelo's theorem (for this game)</b><p>The game is finite, has perfect information, no chance, and no draws (someone makes the last take). Then from the starting position, <b>exactly one</b> of the two players — the first or the second — has a strategy that guarantees a win.</p></div>
+            <p class="dim">Amanda chooses who starts. So she simply takes whichever role has the winning strategy. She can therefore guarantee the book for every <i>n</i>, even before finding the strategy.</p>
+          </div>
+          <div class="reveal d1">
+            <div class="card"><span class="tag">Why this matters</span><h3>Existence vs. recipe</h3><p class="dim">This argument proves the answer is <b>all n</b> immediately. The mod-7 analysis supplies the recipe — which role, and which takes — that the task actually asks for. Together: the reason, and the method.</p>
+              <p class="dim" style="margin:0">It also explains why this works for <em>any</em> take limit, not just 6. See <a href="generalize.html">Generalize</a>.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="brute" class="block tight">
+        <h2 class="reveal">4 · Brute-force check (no formula used)</h2>
+        <p class="lead reveal">This computes win/lose for every position by exhaustive backward induction — literally trying every legal move — and only afterwards compares with “7 ∤ r”.</p>
+        <div class="card vbox reveal">
+          <div class="vrow">
+            <div class="field"><label>Check all n up to</label><input type="number" id="vN" value="5000" min="10" max="2000000" style="width:8em"></div>
+            <div class="field"><label>Max take m</label><input type="number" id="vM" value="6" min="1" max="30"></div>
+            <button class="btn primary" id="vGo" type="button">Run the check</button>
+          </div>
+          <div class="vres" id="vOut">Press the button.</div>
+        </div>
+      </section>
+
+      <section id="unique" class="block tight">
+        <h2 class="reveal">Bonus · the winning opening is unique</h2>
+        <p class="lead reveal">When 7 ∤ <i>r</i>, how many different moves keep the win? Compute it for every <i>r</i> up to 70 by counting moves into losing positions:</p>
+        <div class="card reveal">
+          <div class="hist" id="hist"></div>
+          <p class="dim" style="margin:30px 0 0">Exactly one winning move for every non-multiple of 7 (the bar has height 1), and none for multiples of 7 (empty bar). Amanda's plan is not just good; it is forced.</p>
+        </div>
+      </section>
+
+      <section id="flaws" class="block tight">
+        <h2 class="reveal">Spot the flaw</h2>
+        <div class="grid g2">
+          <div class="card flaw reveal" data-flaw><h4>“Always take 3”</h4><blockquote>“Take 3 every turn. Then the line shrinks by 3 each time, so I'll hit the end exactly.”</blockquote><button class="btn sm" type="button">Reveal the flaw</button><p class="ans dim">Bodil doesn't have to cooperate. If she takes 1 instead of 3, the count mod 3 no longer lines up. The strategy must <em>adapt</em> to her move. The “7 − k” reply does exactly that, for every k.</p></div>
+          <div class="card flaw reveal d1" data-flaw><h4>“Take the biggest”</h4><blockquote>“Always take 6. That leaves the opponent the smallest chance.”</blockquote><button class="btn sm" type="button">Reveal the flaw</button><p class="ans dim">Try n = 7 as the first player: take 6, leave 1, opponent takes the book. Greed ignores the leftover count. What matters is what <em>remainder</em> you leave, which must be a multiple of 7.</p></div>
+          <div class="card flaw reveal" data-flaw><h4>“Go first, it's an advantage”</h4><blockquote>“Starting is always best: you get the first pick of prizes.”</blockquote><button class="btn sm" type="button">Reveal the flaw</button><p class="ans dim">For n = 7, 14, 21… going first is losing. The first player is forced to break the multiple of 7. That's why Amanda is given the <em>choice</em>: she picks the right side.</p></div>
+          <div class="card flaw reveal d1" data-flaw><h4>“Seven only works for small n”</h4><blockquote>“For huge n the pattern must break somewhere.”</blockquote><button class="btn sm" type="button">Reveal the flaw</button><p class="ans dim">The induction has no size limit: each position only depends on the six before it, and the same two-case argument repeats forever. Also try the brute-force check up to two million.</p></div>
+        </div>
+      </section>
+      <div id="pagenav"></div>
+    </div>
+  </div>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  /* induction stepper */
+  const SIZE = 56; let cur = 0, st = [], timer = null;
+  const board = $('board');
+  board.innerHTML = Array.from({ length: SIZE }, (_, r) => `<div class="bc" id="b${r}">${r}</div>`).join('');
+  function reset() { st = new Array(SIZE).fill(null); cur = 0; clearInterval(timer); timer = null; $('iAuto').textContent = '▶ Auto'; paint(); why(-1); }
+  function paint(c = -1, t = -1) { st.forEach((v, r) => { const e = $('b' + r); e.className = 'bc' + (v ? ' ' + v : '') + (r === c ? ' cur' : '') + (r === t ? ' tgt' : ''); }); }
+  function why(r) {
+    const w = $('why');
+    if (r < 0) { w.innerHTML = '<b>Ready.</b> Positions fill in left to right. Each one is decided only from positions already known.'; return; }
+    if (r === 0) { w.innerHTML = '<b class="k">r = 0 → losing (P).</b> The previous player took the last prize. Base case.'; return; }
+    if (r % 7 !== 0) { const s = r % 7; w.innerHTML = `<b class="k">r = ${r} → winning (N).</b> ${r} = 7·${Math.floor(r / 7)} + ${s}. Take ${s} to reach ${r - s}, which is a multiple of 7 already known to be <span class="chip bad">losing</span>.`; return; }
+    w.innerHTML = `<b class="k">r = ${r} → losing (P).</b> Every move takes k ∈ {1…6}, reaching ${[1, 2, 3, 4, 5, 6].map((k) => r - k).join(', ')}. None of these is a multiple of 7, so each is <span class="chip good">winning</span> for the opponent. All moves lose.`;
+  }
+  function step() {
+    if (cur >= SIZE) { clearInterval(timer); timer = null; $('iAuto').textContent = '▶ Auto'; return; }
+    const r = cur; st[r] = r % 7 === 0 ? 'P' : 'N'; paint(r, r % 7 === 0 ? -1 : r - (r % 7)); why(r); cur++;
+  }
+  $('iStep').onclick = step; $('iReset').onclick = reset;
+  $('iAuto').onclick = () => { if (timer) { clearInterval(timer); timer = null; $('iAuto').textContent = '▶ Auto'; } else { if (cur >= SIZE) reset(); timer = setInterval(step, 380); $('iAuto').textContent = '⏸ Pause'; } };
+  reset(); for (let i = 0; i < 3; i++) step();
+
+  /* brute force */
+  $('vGo').onclick = () => {
+    const N = Math.max(10, Math.min(2000000, +$('vN').value || 5000)), m = Math.max(1, Math.min(30, +$('vM').value || 6));
+    const t0 = performance.now(); const win = AM.bruteWin(N, m); const dt = performance.now() - t0;
+    let bad = 0, firstBad = -1, losing = 0;
+    for (let r = 0; r <= N; r++) { const pred = r % (m + 1) !== 0; if (!!win[r] !== pred) { bad++; if (firstBad < 0) firstBad = r; } if (!win[r]) losing++; }
+    const lines = [`Max take m = ${m}; positions 0 … ${N.toLocaleString()} (${(N + 1).toLocaleString()} total)`, `Brute-force backward induction took ${dt.toFixed(1)} ms`, `Losing positions found: ${losing.toLocaleString()} (expected ${Math.floor(N / (m + 1)) + 1})`, ''];
+    lines.push(bad === 0 ? `<span class="ok">✔ Every position matches “losing ⇔ ${m + 1} divides r”. Amanda wins for all n ≤ ${N.toLocaleString()}.</span>` : `<span class="bad">✘ ${bad} mismatches, first at r = ${firstBad}</span>`);
+    $('vOut').innerHTML = lines.join('\n');
+  };
+  $('vGo').click();
+
+  /* uniqueness histogram */
+  const sol = AM.solve(AM.range(6), 70);
+  const counts = {}; for (let r = 1; r <= 70; r++) counts[r] = sol.good[r].length;
+  $('hist').innerHTML = Array.from({ length: 70 }, (_, i) => { const r = i + 1; return `<div style="height:${counts[r] * 100}%;${counts[r] ? '' : 'background:rgba(56,182,196,.5);height:4px'}" title="r=${r}: ${counts[r]} winning move(s)">${r % 7 === 0 || r === 1 ? `<span>${r}</span>` : ''}</div>`; }).join('');
+
+  /* flaws */
+  document.querySelectorAll('[data-flaw]').forEach((c) => c.querySelector('button').onclick = () => c.classList.toggle('open'));
+})();
+</script>
+</body>
+</html>

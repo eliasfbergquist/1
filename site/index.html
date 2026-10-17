@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hjelp Amanda — the book at the front of the line</title>
+<meta name="description" content="Interactive guide to the MGMT4100 prize-line problem: how Amanda guarantees the book, for every number of prizes.">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .hero { padding: 70px 0 30px; position: relative; }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 48px; align-items: center; }
+  .hero h1 { margin-bottom: 20px; }
+  .hero .lead { margin-bottom: 30px; }
+  .fish { position: absolute; right: -60px; top: 10px; width: 520px; opacity: .22; pointer-events: none; animation: swim 14s ease-in-out infinite; z-index: -1; }
+  @keyframes swim { 50% { transform: translate(-40px, 16px) rotate(-2deg); } }
+  .answer-box { margin-top: 26px; padding: 18px 22px; border: 1px solid var(--line-2); border-radius: 18px; background: var(--card); display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+  .answer-box .in { display: flex; gap: 10px; align-items: center; }
+  .answer-box output { font-family: var(--serif); font-size: 24px; color: var(--gold-2); font-style: italic; }
+  .demo-card { padding: 22px; }
+  .demo-card .chip { margin-bottom: 14px; }
+  .big-q { font-family: var(--serif); font-size: clamp(30px, 4vw, 54px); font-style: italic; line-height: 1.1; letter-spacing: -.02em; }
+  .path { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .mini-rule { display: flex; gap: 14px; align-items: flex-start; }
+  .mini-rule .big { font-family: var(--display); font-size: 54px; line-height: .9; color: var(--gold); }
+  .map-teaser { display: grid; grid-template-columns: repeat(14, 1fr); gap: 5px; }
+  .map-teaser i { aspect-ratio: 1; border-radius: 7px; background: #3a2418; display: block; transition: transform .2s; }
+  .map-teaser i.t { background: #14434b; }
+  .map-teaser i:hover { transform: scale(1.25); }
+  .teaser-h { background: linear-gradient(135deg, rgba(255,42,42,.14), rgba(255,224,58,.08)); border-color: rgba(255,90,70,.4); }
+  @media (max-width: 960px) { .hero-grid, .path { grid-template-columns: minmax(0, 1fr); } .fish { width: 320px; right: 0; } }
+</style>
+</head>
+<body data-page="home">
+<main>
+  <section class="hero container">
+    <svg class="fish" viewBox="0 0 520 160" fill="none" aria-hidden="true">
+      <path fill="#ee5a36" d="M132 82c-28-16-62-28-92-34 24 16 36 28 44 34-8 8-20 20-44 36 30-8 64-20 92-36z"/>
+      <path fill="#f2b84b" d="M128 82c28-38 96-52 176-36 62 12 118 8 168-6-8 14-6 28 2 40-52 10-110 8-172 4-64 10-130 8-174-2z"/>
+      <path fill="#c23b22" d="M250 52c26-30 58-28 70-6-28 0-48 4-70 6z"/><circle cx="430" cy="76" r="5" fill="#14110e"/>
+    </svg>
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">MGMT4100 · Arbeidskrav · Høst 2026</span>
+        <h1>Hjelp<br><span class="grad">Amanda.</span></h1>
+        <p class="lead">Prizes lie in a row. Two girls take turns grabbing <b>1 to 6</b> from the far end. The only thing Amanda wants is the book of fishes — and it lies <em class="hl">first</em>, so it is taken <em class="hl">last</em>. She can pick who starts. Can she always get it?</p>
+        <div class="row">
+          <a class="btn primary" href="play3d.html">🕹️ Play in first-person 3D</a>
+          <a class="btn" href="strategy.html">🧭 See the strategy</a>
+          <a class="btn" href="play.html">🎮 2D game</a>
+        </div>
+        <div class="answer-box" id="quick">
+          <div class="in"><span class="lbl" style="margin:0">If there are</span><input type="number" id="qn" min="1" max="9999" value="10"><span class="lbl" style="margin:0">prizes…</span></div>
+          <output id="qout"></output>
+        </div>
+      </div>
+      <div class="card demo-card glow reveal">
+        <span class="chip gold">live · perfect play on repeat</span>
+        <div id="demo"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee reveal" aria-hidden="true"><div class="marquee-in" id="mq"></div></div>
+
+  <section class="block container">
+    <div class="g-split grid">
+      <div class="reveal">
+        <span class="eyebrow">The answer</span>
+        <h2>Every single <span class="grad">n</span>.</h2>
+        <p class="lead">Amanda can force the book for <b>any</b> number of prizes, from one to a billion. The key is the number <b>7</b> — one more than the largest take.</p>
+        <div class="eq">n ≡ 0 (mod 7): let Bodil start &nbsp;·&nbsp; otherwise start, take n mod 7</div>
+        <p class="dim">After that, whatever Bodil takes (<i>k</i>), Amanda takes <b>7 − k</b>. Every pair of moves removes exactly seven prizes, so Amanda always leaves a multiple of 7 behind. When the line gets short, it's Bodil who faces the full seven.</p>
+      </div>
+      <div class="reveal d1">
+        <div class="card">
+          <span class="tag">Traps in the first 98 positions</span>
+          <div class="map-teaser" id="teaser"></div>
+          <p class="mute" style="font-size:14px;margin-top:14px">Teal squares are multiples of 7 — whoever must move from there loses the book. Everything else is a win for the player to move.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block container">
+    <div class="reveal"><span class="eyebrow">Explore</span><h2>A whole site for one little game.</h2>
+    <p class="lead" style="margin-bottom:34px">Go through the solution in order, or jump straight to whatever looks fun.</p></div>
+    <div class="grid g3 dense" id="cards"></div>
+  </section>
+
+  <section class="block container">
+    <div class="path">
+      <div class="card reveal"><div class="mini-rule"><span class="big">1</span><div><h4>Count</h4><p class="dim">Read <i>n</i>, the number of prizes. Compute the remainder when dividing by 7.</p></div></div></div>
+      <div class="card reveal d1"><div class="mini-rule"><span class="big">2</span><div><h4>Choose</h4><p class="dim">Remainder 0? Let Bodil begin. Otherwise Amanda begins and takes that many.</p></div></div></div>
+      <div class="card reveal d2"><div class="mini-rule"><span class="big">3</span><div><h4>Pair up</h4><p class="dim">Bodil takes <i>k</i>, you take 7 − <i>k</i>. Seven vanish per round.</p></div></div></div>
+      <div class="card reveal d3"><div class="mini-rule"><span class="big">4</span><div><h4>Collect</h4><p class="dim">Eventually ≤ 6 remain on your turn. Take them all: the book is yours.</p></div></div></div>
+    </div>
+  </section>
+
+  <section class="block container">
+    <a class="card teaser-h reveal" href="hakon.html" style="padding:34px">
+      <span class="tag" style="color:var(--gold)">🚨 Optional detour</span>
+      <h2 style="margin-bottom:10px">The Håkon Files</h2>
+      <p class="dim" style="max-width:60ch">Five pages of well-deserved (fictional) contempt for a certain Håkon: a charge sheet, a beatable bot, a tribunal with a wheel of sentencing, and a rigorous proof that he is, mathematically, a trap.</p>
+      <span class="btn" style="margin-top:12px">Open the case file →</span>
+    </a>
+  </section>
+
+  <section class="block container tight"><div id="pagenav"></div></section>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/game.js"></script>
+<script>
+(function () {
+  /* live demo */
+  const g = AM.mountGame(document.getElementById('demo'), { n: 17, mode: 'watch', controls: false, compact: true, autoloop: true, speed: 650, persistN: false, showMoves: false });
+  /* quick answer */
+  const qn = document.getElementById('qn'), qo = document.getElementById('qout');
+  function quick() {
+    const n = Math.max(1, parseInt(qn.value, 10) || 1), s = n % 7;
+    qo.textContent = s === 0 ? `→ Amanda lets Bodil start. Then answers k with 7 − k.` : (n <= 6 ? `→ Amanda starts and takes all ${n}.` : `→ Amanda starts and takes ${s}.`);
+  }
+  qn.addEventListener('input', quick); quick();
+  /* marquee */
+  const words = ['n = 1', 'n = 2', 'n = 3', 'n = 10', 'n = 50', 'n = 777', 'n = 1 000 000', 'n = 7 ✦ let Bodil start', 'n = 8 ✦ take 1', 'n = 100 ✦ take 2'];
+  const mq = document.getElementById('mq');
+  const html = words.map((w) => `<span>${w.replace(/(✦.*)/, '<b>$1</b>')}</span>`).join('');
+  mq.innerHTML = html + html;
+  /* teaser grid */
+  document.getElementById('teaser').innerHTML = Array.from({ length: 98 }, (_, i) => `<i class="${(i + 1) % 7 === 0 ? 't' : ''}" title="n = ${i + 1}"></i>`).join('');
+  /* page cards */
+  const skip = new Set(['home']);
+  document.getElementById('cards').innerHTML = AM.PAGES.filter((p) => !skip.has(p.id) && !p.id.startsWith('hakon')).map((p, i) =>
+    `<a class="card reveal d${i % 3}${['play3d', 'map'].includes(p.id) ? ' wide' : ''}" href="${p.href}"><span class="ic">${p.ic}</span><span class="tag">${p.g}</span><h3>${p.t}</h3><p class="dim">${p.d}.</p></a>`).join('');
+  AM.reveal();
+})();
+</script>
+</body>
+</html>

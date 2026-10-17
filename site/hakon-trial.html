@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tribunal — The Håkon Files</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .court { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: center; }
+  .court > * { min-width: 0; }
+  .wheel-wrap { position: relative; max-width: 520px; margin: 0 auto; width: 100%; }
+  #wheel { width: 100%; height: auto; display: block; filter: drop-shadow(0 20px 40px rgba(0,0,0,.55)); }
+  .pin { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 16px solid transparent; border-right: 16px solid transparent; border-top: 40px solid var(--gold); filter: drop-shadow(0 4px 6px rgba(0,0,0,.6)); z-index: 2; }
+  .hub { position: absolute; inset: 0; margin: auto; width: 90px; height: 90px; border-radius: 50%; background: var(--gold); color: #1a1205; font-family: var(--display); font-size: 22px; border: 6px solid #000; cursor: pointer; z-index: 3; }
+  .hub:disabled { opacity: .6; cursor: wait; }
+  .verdict { min-height: 150px; }
+  .verdict .v { font-family: var(--display); text-transform: uppercase; font-size: clamp(30px, 4.6vw, 58px); line-height: 1; color: var(--gold); }
+  .jury { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; }
+  .jury i { aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; font-style: normal; background: rgba(255,255,255,.06); font-size: 18px; transition: .3s; }
+  .jury i.g { background: var(--accent); transform: scale(1.08); }
+  .stage { display: grid; gap: 12px; }
+  .say { display: grid; grid-template-columns: 54px 1fr; gap: 14px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+  .say .who { font-size: 36px; }
+  .say small { color: var(--gold); font-family: var(--mono); text-transform: uppercase; letter-spacing: .1em; font-size: 11px; display: block; }
+  .hist li { padding: 6px 0; border-bottom: 1px solid var(--line); color: var(--dim); font-size: 15px; }
+  @media (max-width: 860px) { .court { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 520px) { .jury { grid-template-columns: repeat(6, 1fr); } }
+</style>
+</head>
+<body data-page="hakon-trial">
+<main>
+  <div class="stripe"></div>
+  <section class="container phead">
+    <div class="crumbs"><a href="hakon.html">The Håkon Files</a> / The Tribunal</div>
+    <span class="eyebrow">Court is in session · All fictional</span>
+    <h1>The <span class="grad">Tribunal.</span></h1>
+    <p class="lead">The fictional Håkon has been charged (see <a href="hakon-charges.html">the charge sheet</a>). The jury is unanimous. All that remains is sentencing. Spin the wheel and let fate be mildly inconvenient.</p>
+  </section>
+
+  <section class="container block tight">
+    <div class="court">
+      <div class="wheel-wrap reveal">
+        <div class="pin"></div>
+        <canvas id="wheel" width="720" height="720"></canvas>
+        <button class="hub" id="spin" type="button">SPIN</button>
+      </div>
+      <div>
+        <div class="card glow verdict" id="verdict"><span class="tag">Sentence</span><p class="v" id="vTxt">Awaiting spin…</p><p class="dim" id="vSub">The wheel is fair. Håkon is not.</p></div>
+        <div style="margin-top:20px"><span class="tag" style="color:var(--gold);font-size:11px;letter-spacing:.2em;text-transform:uppercase">The jury</span><div class="jury" id="jury" style="margin-top:8px"></div><p class="dim" style="font-size:14px;margin:8px 0 0" id="jTxt">Jury deliberating… (for 0.4 seconds)</p></div>
+        <div style="margin-top:22px"><span class="tag" style="color:var(--gold);font-size:11px;letter-spacing:.2em;text-transform:uppercase">Previous sentences</span><ul class="hist" id="hist" style="list-style:none;padding:0;margin:6px 0 0"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container block tight">
+    <h2 class="reveal">The proceedings</h2>
+    <div class="stage">
+      <div class="say reveal"><span class="who">🧑‍⚖️</span><div><small>The judge</small>“The defendant is accused of taking three prizes, again. How does he plead?”</div></div>
+      <div class="say reveal"><span class="who">🧌</span><div><small>Håkon</small>“Not guilty. And also, what is a modulo?”</div></div>
+      <div class="say reveal"><span class="who">👩‍🏫</span><div><small>Prosecutor (Amanda, obviously)</small>“Your honour, I present Exhibit A: every multiple of seven, ever.”</div></div>
+      <div class="say reveal"><span class="who">🎒</span><div><small>Witness: the prizes</small>“We were there. He took 3. Then 3. Then 3.”</div></div>
+      <div class="say reveal"><span class="who">⚖️</span><div><small>The judge</small>“The court has heard enough. Jury?”</div></div>
+    </div>
+  </section>
+  <section class="container block tight"><div id="pagenav"></div></section>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const SENT = [
+    ['Take 7 prizes. Leave none.', 'Impossible by the rules, which is the point.'],
+    ['Write “I am a multiple of 7” 14 times', 'Ideally in multiples of 7 words.'],
+    ['One week of 1-prize turns only', 'Painfully slow, also still losing.'],
+    ['Must go first when n = 21', 'Poetic justice.'],
+    ['Explain Zermelo to a goldfish', 'The goldfish will win the follow-up game.'],
+    ['Carry Amanda’s books for a day', 'The actual book stays with Amanda.'],
+    ['Serve as the “trap” in the next tutorial', 'Standing on the 7 square.'],
+    ['Lose a best-of-7 to a random bot', 'He will blame the randomness.'],
+    ['Apologise to the number 7', 'Seven accepts. Grudgingly.'],
+    ['Rematch tomorrow. And the day after.', 'The result will not change.'],
+    ['Sit at the back, counting prizes', 'Mod 7. Out loud.'],
+    ['Mild disappointment', 'Suspended until further notice.'],
+  ];
+  const SHORT = ['Take all 7', 'Write lines x14', 'Only 1-takes', 'Start at n = 21', 'Teach a goldfish', 'Carry the books', 'Be the trap', 'Lose to a bot', 'Apologise to 7', 'Rematch. Again.', 'Count mod 7', 'Disappointment'];
+  const COL = ['#ff2a2a', '#ffe03a', '#ff6a3d', '#ff2a6d', '#ffb03a', '#e01b1b'];
+  const cv = $('wheel'), ctx = cv.getContext('2d'), N = SENT.length, A = (Math.PI * 2) / N;
+  let rot = 0, spinning = false;
+  function draw() {
+    const c = cv.width / 2; ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.save(); ctx.translate(c, c); ctx.rotate(rot);
+    for (let i = 0; i < N; i++) {
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, c - 10, i * A, (i + 1) * A); ctx.closePath();
+      ctx.fillStyle = COL[i % COL.length]; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = '#0a0606'; ctx.stroke();
+      ctx.save(); ctx.rotate(i * A + A / 2); ctx.textAlign = 'right'; ctx.fillStyle = (i % COL.length === 1 || i % COL.length === 4) ? '#1a0f08' : '#fff';
+      ctx.font = '600 30px Outfit, sans-serif'; ctx.textBaseline = 'middle';
+      ctx.fillText(SHORT[i], c - 34, 0); ctx.restore();
+    }
+    ctx.restore();
+    ctx.beginPath(); ctx.arc(c, c, c - 6, 0, 7); ctx.lineWidth = 12; ctx.strokeStyle = '#000'; ctx.stroke();
+  }
+  const hist = []; const jury = $('jury');
+  jury.innerHTML = Array.from({ length: 12 }, () => '<i>🧑</i>').join('');
+  function juryVote() {
+    const els = jury.querySelectorAll('i'); els.forEach((e) => { e.classList.remove('g'); e.textContent = '🧑'; });
+    els.forEach((e, i) => setTimeout(() => { e.classList.add('g'); e.textContent = '👎'; if (i === 11) $('jTxt').textContent = 'Guilty. 12–0. Håkon asks for a 13th juror.'; }, 150 + i * 90));
+  }
+  function spin() {
+    if (spinning) return; spinning = true; $('spin').disabled = true;
+    $('vTxt').textContent = '…'; $('vSub').textContent = 'The wheel turns.'; $('jTxt').textContent = 'Jury deliberating…';
+    const target = Math.floor(Math.random() * N);
+    /* pointer at top = angle -π/2; slice i centre at i*A + A/2 + rot  → want = -π/2 mod 2π */
+    const finalRot = (Math.PI * 2) * (5 + Math.floor(Math.random() * 3)) + ((-Math.PI / 2 - (target * A + A / 2)) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+    const start = rot % (Math.PI * 2), t0 = performance.now(), dur = 4600;
+    function f(t) { const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 4); rot = start + (finalRot - start) * e; draw(); if (p < 1) requestAnimationFrame(f); else done(target); }
+    requestAnimationFrame(f);
+  }
+  function done(i) {
+    spinning = false; $('spin').disabled = false;
+    $('vTxt').textContent = SENT[i][0]; $('vSub').textContent = SENT[i][1];
+    const v = $('verdict'); v.classList.remove('shake'); void v.offsetWidth; v.classList.add('shake');
+    hist.unshift(SENT[i][0]); $('hist').innerHTML = hist.slice(0, 5).map((h) => `<li>${AM.esc(h)}</li>`).join('');
+    juryVote(); AM.confetti && AM.confetti({ emoji: ['🔨', '⚖️', '🧌'], count: 50 });
+  }
+  $('spin').onclick = spin; draw();
+  $('hist').innerHTML = '<li>— none yet —</li>';
+})();
+</script>
+</body>
+</html>

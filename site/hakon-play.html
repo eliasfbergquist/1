@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beat Håkon — The Håkon Files</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .score { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .rank { font-family: var(--display); text-transform: uppercase; font-size: clamp(26px, 4vw, 44px); color: var(--gold); line-height: 1; }
+  .excuse { min-height: 3.2em; font-style: italic; color: var(--dim); }
+  .g-say { background: #fff4ea; color: #1b0d08; font-weight: 600; }
+</style>
+</head>
+<body data-page="hakon-play">
+<main>
+  <div class="stripe"></div>
+  <section class="container phead" style="padding-bottom:10px">
+    <div class="crumbs"><a href="hakon.html">The Håkon Files</a> / Beat Håkon</div>
+    <span class="eyebrow">The real game · a fictional opponent</span>
+    <h1>He plays. <span class="grad">He loses.</span></h1>
+    <p class="lead">Same rules as the assignment. This time Bodil's seat is taken by <b>Håkon</b>: a bot with his strategy (“take 3, sometimes 6, vibes otherwise”). You are Amanda. Open correctly and he cannot win. Mis-step and he might get lucky — which he will describe as skill.</p>
+  </section>
+
+  <section class="container block tight">
+    <div class="score">
+      <div class="stat"><b id="sW">0</b><span>Håkon beaten</span></div>
+      <div class="stat"><b id="sL">0</b><span>Håkon wins (you slipped)</span></div>
+      <div class="stat"><b id="sS">0</b><span>current streak</span></div>
+      <div class="card" style="padding:16px 20px"><span class="tag">Your rank</span><div class="rank" id="rank">Rookie</div></div>
+    </div>
+    <div class="card" style="padding:24px"><div id="game"></div></div>
+    <div class="callout" style="margin-top:22px"><b class="t">Håkon's official statement</b><p class="excuse" id="exc">“I have nothing to say. Yet.”</p></div>
+  </section>
+
+  <section class="container block tight">
+    <div class="g-split grid" style="align-items:start">
+      <div class="reveal"><h2>How to beat him every time</h2>
+        <ol class="steps">
+          <li><b class="t">Look at n.</b><p>If n is a multiple of 7, let Håkon start (switch “Who starts”).</p></li>
+          <li><b class="t">Otherwise open with n mod 7.</b><p>The hint switch shows it; try to win with it off.</p></li>
+          <li><b class="t">Answer k with 7 − k.</b><p>Whatever he takes, no exceptions, no mercy.</p></li>
+        </ol>
+      </div>
+      <div class="reveal d1"><div class="card glow"><span class="tag">Fun fact</span><h3>Håkon can win only if you let him</h3><p class="dim">Even a Håkon with perfect luck cannot beat a correct Amanda, because the second-to-last position she leaves him is always a multiple of 7. The only way he wins is a gift from you.</p><p class="dim" style="margin:0">Prefer to play from the other seat? Switch “Your seat” to Bodil and become Håkon yourself.</p></div></div>
+    </div>
+    <div id="pagenav"></div>
+  </section>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/game.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  let st = { w: 0, l: 0, s: 0 };
+  try { st = Object.assign(st, JSON.parse(localStorage.getItem('hakon.stats') || '{}')); } catch (e) {}
+  const RANKS = [[0, 'Rookie'], [1, 'Håkon-Tamer'], [3, 'Seven-Sayer'], [6, 'Modulo Menace'], [10, 'Amanda Prime'], [20, 'Håkon’s Nightmare']];
+  function paint() {
+    $('sW').textContent = st.w; $('sL').textContent = st.l; $('sS').textContent = st.s;
+    $('rank').textContent = RANKS.filter((r) => st.w >= r[0]).pop()[1];
+    try { localStorage.setItem('hakon.stats', JSON.stringify(st)); localStorage.setItem('hakon.losses', String(st.w)); } catch (e) {}
+  }
+  const LINES = {
+    start: ['“Ladies first. I insist.”', '“I have a plan. It is a good plan.”', '“Let’s keep this friendly. Until I win.”'],
+    move: ['“Calculated.”', '“Behold.”', '“That was on purpose.”', '“Three. Always three.”', '“I know exactly what I am doing.”', '“Hm. Bold of you.”'],
+    afterHuman: ['“Interesting. Very interesting. (Unclear.)”', '“I saw that coming. Honest.”', '“You think you are clever.”'],
+    iWon: ['“Fine. You win. This time. And the next 40 times.”', '“The prizes were rigged. I have proof. I will find the proof.”', '“Best of 99?”', '“I was just warming up.”'],
+    iLost: ['“Hah! Told you.”', '“Strategy, my friend. Strategy.”', '“Amanda, you were a worthy opponent. For a moment.”'],
+  };
+  const EXC = ['“I have nothing to say. Yet.”', '“The line was too long.”', '“Seven is a conspiracy.”', '“A gentleman never takes the last prize.”', '“I demand to speak with Bodil.”', '“Technically the book is still in the game.”'];
+  const g = AM.mountGame($('game'), {
+    n: Math.min(AM.getN(10), 60), mode: 'amanda', opp: 'hakon', names: { amanda: 'Amanda', bodil: 'Håkon' }, maxN: 60,
+    say: (who, ev) => (who === 'bodil' ? AM.pick(LINES[ev] || LINES.move) : null),
+    onEnd: (r) => {
+      if (r.humanSeat !== 'amanda') return;
+      if (r.humanWon) { st.w++; st.s++; } else { st.l++; st.s = 0; }
+      paint(); $('exc').textContent = r.humanWon ? AM.pick(EXC) : '“Skill. Pure skill. Nobody say luck.”';
+      if (r.humanWon) { const p = $('game'); p.classList.remove('shake'); void p.offsetWidth; p.classList.add('shake'); }
+    },
+  });
+  paint();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Position Map — Hjelp Amanda</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .mapgrid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+  .cv-wrap { position: relative; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(5,8,20,.55); padding: 10px; }
+  .cv-wrap canvas { width: 100%; display: block; border-radius: 12px; cursor: pointer; }
+  .side-panel { position: sticky; top: calc(var(--nav-h) + 20px); display: grid; gap: 16px; }
+  .info-n { font-family: var(--display); font-size: 72px; line-height: .9; color: var(--gold); }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 15px; margin-top: 12px; }
+  .kv span:nth-child(odd) { color: var(--mute); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; padding-top: 3px; }
+  .strip { font-family: var(--mono); font-size: 15px; letter-spacing: .12em; word-break: break-all; line-height: 1.9; }
+  .strip b { color: var(--sea-2); font-weight: 500; background: rgba(56,182,196,.15); border-radius: 4px; padding: 0 2px; }
+  .strip i { font-style: normal; color: #7f6a58; }
+  .ctls { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: flex-end; margin-bottom: 16px; }
+  @media (max-width: 960px) { .mapgrid { grid-template-columns: 1fr; } .side-panel { position: static; } }
+</style>
+</head>
+<body data-page="map">
+<main>
+  <section class="container phead">
+    <div class="crumbs"><a href="index.html">Home</a> / Explore / Position Map</div>
+    <span class="eyebrow">Every n at a glance</span>
+    <h1>The map of <span class="grad">all positions.</span></h1>
+    <p class="lead">Each square is a number of prizes in the line. Amber squares are wins for whoever moves; teal squares are traps. Change the layout and watch the pattern appear — and vanish — as you stop lining things up in sevens.</p>
+  </section>
+
+  <section class="container block tight">
+    <div class="ctls">
+      <div class="field"><label>Layout</label><div class="seg" id="view"><button data-v="grid" class="on" type="button">Grid</button><button data-v="spiral" type="button">Spiral</button><button data-v="spokes" type="button">Spokes</button></div></div>
+      <div class="field"><label>Colour by</label><div class="seg" id="color"><button data-v="wl" class="on" type="button">Win / trap</button><button data-v="take" type="button">Winning take</button><button data-v="grundy" type="button">Grundy value</button></div></div>
+      <div class="field"><label>How many <span id="nLab">98</span></label><input type="range" id="N" min="14" max="600" value="98"></div>
+      <div class="field" id="wField"><label>Width / period <span id="wLab">7</span></label><input type="range" id="W" min="2" max="24" value="7"></div>
+      <div class="field"><label>Max take m <span id="mLab">6</span></label><input type="range" id="Mx" min="1" max="12" value="6"></div>
+    </div>
+    <div class="mapgrid">
+      <div class="cv-wrap"><canvas id="cv" width="900" height="560"></canvas></div>
+      <div class="side-panel">
+        <div class="card glow">
+          <span class="tag">Selected</span>
+          <div class="info-n" id="iN">10</div>
+          <div class="kv" id="iKv"></div>
+          <div class="row" style="margin-top:16px"><a class="btn sm primary" id="goPlay" href="play.html">Play it 2D</a><a class="btn sm" id="go3d" href="play3d.html">Play in 3D</a></div>
+        </div>
+        <div class="card"><span class="tag">Legend</span><div class="legend" id="leg"></div></div>
+        <div class="card"><span class="tag">Trap density</span><div class="stats" style="grid-template-columns:1fr 1fr"><div class="stat"><b id="sTraps">0</b><span>traps shown</span></div><div class="stat"><b id="sPct">0%</b><span>of all n</span></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container block tight">
+    <h2 class="reveal">The sequence, written out</h2>
+    <p class="lead reveal">Positions 1 to 126. <b style="color:var(--sea-2)">Traps</b> in teal, wins in dim amber dots. Six wins, one trap, six wins, one trap…</p>
+    <div class="card reveal"><div class="strip" id="strip"></div></div>
+  </section>
+
+  <section class="container block tight">
+    <div class="grid g3">
+      <div class="card reveal"><span class="ic">🔲</span><h3>Grid, width 7</h3><p class="dim">With seven columns the traps stack into one clean vertical stripe: the last column. Slide the width to 6 or 8 and the stripe leans.</p></div>
+      <div class="card reveal d1"><span class="ic">🌀</span><h3>Spiral</h3><p class="dim">On a square spiral the traps trace diagonals that bend because 7 doesn't divide the side lengths. Pretty, but not as clear as the grid.</p></div>
+      <div class="card reveal d2"><span class="ic">☀️</span><h3>Spokes</h3><p class="dim">Seven rays from the centre; every multiple of 7 sits on the same ray. Set the period to 7 and watch the traps form a single spoke.</p></div>
+    </div>
+  </section>
+  <section class="container block tight"><div id="pagenav"></div></section>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  const S = { view: 'grid', color: 'wl', N: 98, W: 7, m: 6, sel: Math.min(AM.getN(10), 600), sol: null, pos: [] };
+  const palTake = ['#f2b84b', '#ee5a36', '#d1456b', '#9b59d6', '#4f7bff', '#2fb4a0', '#7bc65a', '#e0d34a', '#ff8a5c', '#c58b3a', '#b0536a', '#6c8aa0'];
+  const palG = ['#123d46', '#3a2418', '#7a3b22', '#a85a2c', '#c98a3a', '#e0b45a', '#f2d58a', '#fff0c0', '#8fe3ec', '#38b6c4', '#2c7a8a', '#1c4a55'];
+  const cs = getComputedStyle(document.documentElement);
+
+  function colorOf(n) {
+    const sol = S.sol;
+    if (S.color === 'wl') return sol.win[n] ? '#3a2418' : '#14434b';
+    if (S.color === 'take') return sol.win[n] ? palTake[(sol.good[n][0] - 1) % palTake.length] : '#14434b';
+    return palG[sol.grundy[n] % palG.length];
+  }
+  function textColor(n) { return S.sol.win[n] ? '#ffcfa8' : '#a9ecf5'; }
+
+  function layout() {
+    const W = cv.width, H = cv.height, N = S.N; S.pos = new Array(N + 1);
+    if (S.view === 'grid') {
+      const cols = S.W, rows = Math.ceil(N / cols), cell = Math.min(W / cols, H / rows);
+      const ox = (W - cell * cols) / 2, oy = (H - cell * rows) / 2;
+      for (let n = 1; n <= N; n++) { const i = n - 1; S.pos[n] = { x: ox + (i % cols) * cell + cell / 2, y: oy + Math.floor(i / cols) * cell + cell / 2, s: cell * 0.9 }; }
+    } else if (S.view === 'spiral') {
+      /* Ulam-style square spiral, 1 at centre */
+      let x = 0, y = 0, dx = 1, dy = 0, seg = 1, left = 1, turn = 0; const pts = [];
+      for (let n = 1; n <= N; n++) { pts[n] = [x, y]; x += dx; y += dy; if (--left === 0) { [dx, dy] = [-dy, dx]; if (++turn % 2 === 0) seg++; left = seg; } }
+      let minx = 0, maxx = 0, miny = 0, maxy = 0; for (let n = 1; n <= N; n++) { minx = Math.min(minx, pts[n][0]); maxx = Math.max(maxx, pts[n][0]); miny = Math.min(miny, pts[n][1]); maxy = Math.max(maxy, pts[n][1]); }
+      const cell = Math.min(W / (maxx - minx + 1), H / (maxy - miny + 1)), cx = W / 2 - ((minx + maxx) / 2) * cell, cy = H / 2 - ((miny + maxy) / 2) * cell;
+      for (let n = 1; n <= N; n++) S.pos[n] = { x: cx + pts[n][0] * cell, y: cy + pts[n][1] * cell, s: cell * 0.9 };
+    } else {
+      const R = Math.min(W, H) / 2 - 18, per = S.W, step = (2 * Math.PI) / per, sz = Math.max(5, Math.min(30, (per * R / N) * 0.92));
+      for (let n = 1; n <= N; n++) { const a = n * step - Math.PI / 2, r = R * (0.05 + 0.95 * n / N); S.pos[n] = { x: W / 2 + Math.cos(a) * r, y: H / 2 + Math.sin(a) * r, s: sz, round: true }; }
+    }
+  }
+  function draw() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    if (S.view === 'spokes') {
+      ctx.strokeStyle = 'rgba(244,239,228,.07)'; ctx.lineWidth = 1;
+      for (let i = 0; i < S.W; i++) { const a = i * 2 * Math.PI / S.W - Math.PI / 2; ctx.beginPath(); ctx.moveTo(cv.width / 2, cv.height / 2); ctx.lineTo(cv.width / 2 + Math.cos(a) * 320, cv.height / 2 + Math.sin(a) * 320); ctx.stroke(); }
+    }
+    for (let n = 1; n <= S.N; n++) {
+      const p = S.pos[n], sz = p.s; ctx.fillStyle = colorOf(n);
+      if (p.round) { ctx.beginPath(); ctx.arc(p.x, p.y, sz / 2, 0, 7); ctx.fill(); }
+      else { ctx.beginPath(); ctx.roundRect(p.x - sz / 2, p.y - sz / 2, sz, sz, Math.max(2, sz * 0.18)); ctx.fill(); }
+      if (sz >= 17) { ctx.fillStyle = textColor(n); ctx.font = `${Math.min(15, sz * 0.46)}px Outfit, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(n, p.x, p.y + 1); }
+    }
+    const sp = S.pos[S.sel];
+    if (sp) { ctx.strokeStyle = '#f2b84b'; ctx.lineWidth = 3; ctx.beginPath(); if (sp.round) ctx.arc(sp.x, sp.y, sp.s / 2 + 3, 0, 7); else ctx.roundRect(sp.x - sp.s / 2 - 3, sp.y - sp.s / 2 - 3, sp.s + 6, sp.s + 6, 8); ctx.stroke(); }
+  }
+  function info() {
+    const n = S.sel, sol = S.sol, m = S.m;
+    $('iN').textContent = n;
+    const trap = !sol.win[n]; const best = sol.good[n];
+    $('iKv').innerHTML = `<span>n mod ${m + 1}</span><b>${n % (m + 1)}</b><span>type</span><b style="color:${trap ? 'var(--sea-2)' : 'var(--gold)'}">${trap ? 'Trap: mover loses' : 'Win: mover wins'}</b><span>winning take</span><b>${trap ? '— none' : best.join(', ')}</b><span>who starts?</span><b>${trap ? 'Bodil (second player wins)' : 'Amanda (take ' + best[0] + ')'}</b><span>Grundy</span><b>${sol.grundy[n]}</b>`;
+    $('goPlay').onclick = () => AM.setN(Math.min(n, 60)); $('go3d').onclick = () => AM.setN(Math.min(n, 40));
+  }
+  function legend() {
+    const m = S.m;
+    if (S.color === 'wl') $('leg').innerHTML = '<span><i class="sw win"></i>Win for the mover</span><span><i class="sw lose"></i>Trap (mover loses)</span>';
+    else if (S.color === 'take') $('leg').innerHTML = Array.from({ length: m }, (_, i) => `<span><i class="sw" style="background:${palTake[i % palTake.length]}"></i>take ${i + 1}</span>`).join('') + '<span><i class="sw lose"></i>trap</span>';
+    else $('leg').innerHTML = Array.from({ length: m + 1 }, (_, i) => `<span><i class="sw" style="background:${palG[i % palG.length]}"></i>g = ${i}</span>`).join('');
+  }
+  function stats() {
+    let t = 0; for (let n = 1; n <= S.N; n++) if (!S.sol.win[n]) t++;
+    AM.count($('sTraps'), t, 500); $('sPct').textContent = (100 * t / S.N).toFixed(1) + '%';
+  }
+  function strip() {
+    const sol = AM.solve(AM.range(6), 126);
+    $('strip').innerHTML = Array.from({ length: 126 }, (_, i) => { const n = i + 1; return sol.win[n] ? '<i>·</i>' : `<b>${n}</b>`; }).join(' ');
+  }
+  function recompute() {
+    S.m = +$('Mx').value; $('mLab').textContent = S.m;
+    S.N = +$('N').value; $('nLab').textContent = S.N;
+    S.W = +$('W').value; $('wLab').textContent = S.W;
+    S.sol = AM.solve(AM.range(S.m), S.N);
+    if (S.sel > S.N) S.sel = S.N;
+    layout(); draw(); info(); legend(); stats();
+  }
+  $('view').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; S.view = b.dataset.v; document.querySelectorAll('#view button').forEach((x) => x.classList.toggle('on', x === b)); $('wField').style.opacity = S.view === 'spiral' ? .35 : 1; layout(); draw(); };
+  $('color').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; S.color = b.dataset.v; document.querySelectorAll('#color button').forEach((x) => x.classList.toggle('on', x === b)); draw(); legend(); };
+  ['N', 'W', 'Mx'].forEach((id) => $(id).addEventListener('input', () => { if (id === 'Mx') { $('W').value = +$('Mx').value + 1; } recompute(); }));
+  function hit(e) {
+    const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) * cv.width / r.width, y = (e.clientY - r.top) * cv.height / r.height;
+    let best = 0, bd = 1e9;
+    for (let n = 1; n <= S.N; n++) { const p = S.pos[n], d = (p.x - x) ** 2 + (p.y - y) ** 2; if (d < bd) { bd = d; best = n; } }
+    return bd < (S.pos[best].s * 0.8) ** 2 ? best : 0;
+  }
+  cv.addEventListener('mousemove', (e) => {
+    const n = hit(e); if (!n) { AM.tip(null); return; }
+    const w = S.sol.win[n]; AM.tip(`<b>n = ${n}</b><br>${w ? 'Win: take ' + S.sol.good[n].join('/') : 'Trap'} · g = ${S.sol.grundy[n]}`, e.clientX, e.clientY);
+  });
+  cv.addEventListener('mouseleave', () => AM.tip(null));
+  cv.addEventListener('click', (e) => { const n = hit(e); if (n) { S.sel = n; AM.setN(Math.min(n, 60)); draw(); info(); } });
+  strip(); recompute();
+})();
+</script>
+</body>
+</html>

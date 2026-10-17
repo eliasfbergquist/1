@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Problem — Hjelp Amanda</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .quote { border-left: 3px solid var(--gold); padding: 6px 0 6px 22px; margin: 18px 0; font-family: var(--serif); font-size: 19px; line-height: 1.55; color: var(--gold-2); }
+  .quote small { display: block; font-family: var(--sans); font-size: 13px; color: var(--mute); margin-top: 6px; }
+  .rule-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .rule { padding: 22px; }
+  .rule .num { font-family: var(--display); font-size: 60px; line-height: .9; color: var(--gold); display: block; margin-bottom: 10px; }
+  .small-cases { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+  .sc { border: 1px solid var(--line); border-radius: 16px; padding: 14px 10px; text-align: center; background: var(--card); cursor: pointer; transition: .18s; }
+  .sc:hover, .sc.on { border-color: var(--gold); transform: translateY(-3px); }
+  .sc b { font-family: var(--display); font-size: 34px; display: block; line-height: 1; }
+  .sc span { font-size: 12px; color: var(--mute); }
+  .sc.trap { background: rgba(56,182,196,.1); }
+  .sc.trap b { color: var(--sea-2); }
+  .sc-detail { margin-top: 18px; min-height: 90px; }
+  .ask-list { display: grid; gap: 14px; }
+  .ask { display: grid; grid-template-columns: 54px 1fr; gap: 16px; align-items: start; padding: 18px 20px; }
+  .ask .q { font-family: var(--display); font-size: 40px; color: var(--accent-2); line-height: .9; }
+  .rolecard { display: flex; gap: 18px; align-items: center; }
+  .rolecard .av { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-size: 34px; flex: 0 0 auto; }
+  .av.a { background: linear-gradient(135deg, #ee5a36, #8f2e1c); } .av.b { background: linear-gradient(135deg, #38b6c4, #17505a); } .av.k { background: linear-gradient(135deg, #1f6a8c, #0b2f47); }
+  @media (max-width: 960px) { .rule-grid { grid-template-columns: 1fr 1fr; } .small-cases { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 560px) { .rule-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-page="problem">
+<main>
+  <section class="container phead">
+    <div class="crumbs"><a href="index.html">Home</a> / Solve / The Problem</div>
+    <span class="eyebrow">Understanding it first</span>
+    <h1>The <span class="grad">problem</span>, retold.</h1>
+    <p class="lead">Before any strategy: what exactly is being asked? This page restates the task in plain words, lets you try the rules by hand, and shows why a few tiny cases already tell you the whole story.</p>
+  </section>
+
+  <div class="container with-toc">
+    <nav class="toc"><b>On this page</b><a href="#cast">The cast</a><a href="#rules">The rules</a><a href="#sandbox">Try the rules</a><a href="#book">Why the book is special</a><a href="#small">Tiny cases</a><a href="#ask">What's being asked</a><a href="#original">The original text</a></nav>
+    <div>
+      <section id="cast" class="block tight">
+        <h2 class="reveal">The cast</h2>
+        <div class="grid g3">
+          <div class="card reveal"><div class="rolecard"><div class="av a">👧</div><div><h3 style="margin:0">Amanda</h3><p class="dim" style="margin:0">Class 5A. Cares about exactly one prize in the world. Gets to choose who starts.</p></div></div></div>
+          <div class="card reveal d1"><div class="rolecard"><div class="av b">🧒</div><div><h3 style="margin:0">Bodil</h3><p class="dim" style="margin:0">Class 7B. Would also like the book, but would be fine without it. Plays to take it if she can.</p></div></div></div>
+          <div class="card reveal d2"><div class="rolecard"><div class="av k">📖</div><div><h3 style="margin:0">The book</h3><p class="dim" style="margin:0"><i>Fishes of Edo</i>. Laid out first, as prize 1: the very <em class="hl">last</em> prize to be picked.</p></div></div></div>
+        </div>
+      </section>
+
+      <section id="rules" class="block tight">
+        <h2 class="reveal">The rules</h2>
+        <div class="rule-grid">
+          <div class="card rule reveal"><span class="num">n</span><h4>A line of prizes</h4><p class="dim">An unknown number <i>n</i> ≥ 1 of prizes is laid out in a row. Prize 1 is the book, at the front.</p></div>
+          <div class="card rule reveal d1"><span class="num">6</span><h4>Take 1 to 6</h4><p class="dim">Players alternate. On your turn you take at least 1 and at most 6 prizes — from the <b>end</b> of the row.</p></div>
+          <div class="card rule reveal d2"><span class="num">⇄</span><h4>Amanda picks the opener</h4><p class="dim">Once she sees <i>n</i>, Amanda decides: does she begin, or does Bodil?</p></div>
+          <div class="card rule reveal d3"><span class="num">★</span><h4>Guarantee</h4><p class="dim">Amanda needs a method that <em>guarantees</em> the book, whatever Bodil does. The rest doesn't matter.</p></div>
+        </div>
+      </section>
+
+      <section id="sandbox" class="block tight">
+        <h2 class="reveal">Try the rules by hand</h2>
+        <p class="lead reveal">This is hot-seat: you control both players. Click any of the last six prizes (or a number button) to take them. Switch who starts, change <i>n</i>, and get a feel for it.</p>
+        <div class="card reveal" style="padding:22px"><div id="sandbox-game"></div></div>
+      </section>
+
+      <section id="book" class="block tight">
+        <div class="g-split grid">
+          <div class="reveal">
+            <h2>Why the book is special</h2>
+            <p class="dim">Prizes come off the <b>end</b> of the row, and the book is at the <b>front</b>. So the book can only be picked up in the very last take — the one that empties the line.</p>
+            <p class="dim">That turns the whole question into a much simpler one:</p>
+            <div class="eq">Whoever makes the last take gets the book.</div>
+            <p class="dim">Nothing else about the prizes matters. We never care who gets the candy, the toys or the ornaments, only who removes the final group.</p>
+          </div>
+          <div class="reveal d1"><div class="card glow">
+            <span class="tag">Reformulation</span>
+            <h3>A "last mover wins" game</h3>
+            <p class="dim">A pile of <i>n</i> counters. Remove 1–6 per turn. The player who takes the last counter wins. Mathematicians call this a <b>subtraction game</b>, and it is one of the best-understood games there is.</p>
+            <a href="theory.html" class="btn sm">Read the theory →</a>
+          </div></div>
+        </div>
+      </section>
+
+      <section id="small" class="block tight">
+        <h2 class="reveal">Tiny cases tell the whole story</h2>
+        <p class="lead reveal">Click a number of prizes to see who should win it, and why.</p>
+        <div class="small-cases reveal" id="sc"></div>
+        <div class="card sc-detail reveal" id="scd"></div>
+      </section>
+
+      <section id="ask" class="block tight">
+        <h2 class="reveal">What's actually being asked</h2>
+        <div class="ask-list">
+          <div class="card ask reveal"><span class="q">1</span><div><h4>For which n is there a guaranteed plan?</h4><p class="dim" style="margin:0">Not just one <i>n</i>: for every possible number of prizes, can Amanda force the book? The more values you can handle, the better.</p></div></div>
+          <div class="card ask reveal"><span class="q">2</span><div><h4>Who should start?</h4><p class="dim" style="margin:0">The plan has two parts: the decision about who opens, and a rule for what to take on each of Amanda's turns.</p></div></div>
+          <div class="card ask reveal"><span class="q">3</span><div><h4>Why does the plan work?</h4><p class="dim" style="margin:0">A guarantee needs a reason. The strategy page shows the plan; the <a href="proof.html">proof page</a> shows why nothing Bodil does can break it.</p></div></div>
+        </div>
+        <div class="callout good reveal"><b class="t">Spoiler</b><p>The answer is: <b>every</b> <i>n</i>. If you want to figure out why for yourself first, play with the sandbox above and the <a href="play.html">game</a> and come back when you're ready.</p></div>
+      </section>
+
+      <section id="original" class="block tight">
+        <h2 class="reveal">The original text</h2>
+        <div class="tabs reveal" id="tabs"><button class="on" data-p="no">Norwegian (original)</button><button data-p="en">English (loose translation)</button></div>
+        <div class="pane on reveal" id="p-no">
+          <div class="quote">Amanda (klasse 5A) og Bodil (klasse 7B) har vunnet en stor skolekonkurranse og skal få premier. […] Alle premiene rades opp på skolelekeplassen. Amanda og Bodil bytter så på å velge 1–6 premier fra slutten av raden, helt til alle er valgt.</div>
+          <div class="quote">Problemet er at Amanda bare bryr seg om én av premiene — en illustrert bok om japanske fisker med veldig fine tegninger. […] Hun har også funnet ut at den kommer til å bli lagt ut først, som premie nr 1 i raden, og vil dermed være den premien som blir valgt sist av alle.</div>
+          <div class="quote">For hvilke verdier av <i>n</i> har du en strategi for Amanda som garanterer at hun får tak i premien (boka) som ligger først i rekka?<small>Arbeidskrav MGMT4100 Høst 2026</small></div>
+        </div>
+        <div class="pane" id="p-en">
+          <div class="quote">Amanda (class 5A) and Bodil (class 7B) have won a big school competition and will receive prizes. […] All the prizes are lined up on the school playground. Amanda and Bodil then take turns choosing 1–6 prizes from the end of the row, until all are chosen.</div>
+          <div class="quote">The problem is that Amanda only cares about one of the prizes — an illustrated book about Japanese fishes with very fine drawings. […] She has also found out that it will be placed first, as prize no. 1 in the row, and will thus be the prize that is chosen last of all.</div>
+          <div class="quote">For which values of <i>n</i> do you have a strategy for Amanda that guarantees she gets the prize (the book) lying first in the row?<small>Arbeidskrav MGMT4100 Høst 2026</small></div>
+        </div>
+      </section>
+      <div id="pagenav"></div>
+    </div>
+  </div>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/game.js"></script>
+<script>
+(function () {
+  AM.mountGame(document.getElementById('sandbox-game'), { n: 10, mode: 'both', controls: true, hint: false, stats: false, persistN: false, maxN: 40 });
+  /* tiny cases */
+  const info = {
+    1: 'One prize: it is the book. The first player takes it. Amanda starts and wins.',
+    2: 'Two prizes: take both. Whoever moves first takes everything, book included.',
+    3: 'Three: same story. Taking all is legal, since 3 ≤ 6.',
+    4: 'Four: the first player takes all four.', 5: 'Five: the first player takes all five.',
+    6: 'Six: the biggest line that can be cleared in one go. The first player wins.',
+    7: 'Seven: the first player cannot clear it. Whatever they take (1–6), the other player takes the rest, 6 down to 1, and gets the book. So <b>Amanda lets Bodil start</b>.',
+  };
+  const sc = document.getElementById('sc'), scd = document.getElementById('scd');
+  sc.innerHTML = [1, 2, 3, 4, 5, 6, 7].map((n) => `<div class="sc ${n === 7 ? 'trap' : ''}" data-n="${n}"><b>${n}</b><span>${n === 7 ? 'second player wins' : 'first player wins'}</span></div>`).join('');
+  function pick(n) {
+    sc.querySelectorAll('.sc').forEach((e) => e.classList.toggle('on', +e.dataset.n === n));
+    scd.innerHTML = `<h4>n = ${n}</h4><p style="margin:0" class="dim">${info[n]}</p>${n === 7 ? '<p class="dim" style="margin-top:10px">Then <b>8</b> is easy: take 1, leaving 7. And so on. Every number that isn\'t a multiple of 7 is a first-player win, because you can leave a multiple of 7 behind. Every multiple of 7 is a second-player win. That is the entire pattern.</p>' : ''}`;
+  }
+  sc.addEventListener('click', (e) => { const c = e.target.closest('.sc'); if (c) pick(+c.dataset.n); });
+  pick(7);
+  /* tabs */
+  document.getElementById('tabs').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    document.querySelectorAll('#tabs button').forEach((x) => x.classList.toggle('on', x === b));
+    document.querySelectorAll('#original .pane').forEach((p) => p.classList.toggle('on', p.id === 'p-' + b.dataset.p));
+  });
+})();
+</script>
+</body>
+</html>

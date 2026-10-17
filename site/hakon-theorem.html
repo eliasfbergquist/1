@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Håkon Is a Trap — The Håkon Files</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .thm { border: 3px solid var(--gold); border-radius: 6px; padding: 28px 30px; background: linear-gradient(135deg, rgba(255,224,58,.1), rgba(255,42,42,.1)); }
+  .thm .tag { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+  .thm p.s { font-family: var(--display); text-transform: uppercase; font-size: clamp(26px, 3.6vw, 46px); line-height: 1.1; margin: 10px 0 0; }
+  .ps { counter-reset: p; list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .ps li { counter-increment: p; display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 16px 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+  .ps li::before { content: counter(p); font-family: var(--display); font-size: 30px; color: var(--gold); line-height: 1; }
+  .ps li p { margin: 0; }
+  .ps li small { color: var(--mute); display: block; font-style: italic; margin-top: 4px; }
+  .qed { text-align: right; font-family: var(--display); font-size: 28px; color: var(--gold); }
+  .meter-in { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+  .meter-in .field { flex: 1; min-width: 240px; }
+  input[type=text] { background: rgba(255,255,255,.06); border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 16px; width: 100%; font-size: 18px; }
+  .res { font-family: var(--display); text-transform: uppercase; font-size: clamp(26px, 4vw, 52px); line-height: 1; margin-top: 18px; color: var(--gold); min-height: 1.1em; }
+  .bars { display: grid; grid-template-columns: repeat(40, 1fr); gap: 3px; align-items: end; height: 190px; padding-bottom: 22px; position: relative; }
+  .bars div { position: relative; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 1px; height: 100%; }
+  .bars div i { display: block; border-radius: 3px 3px 0 0; }
+  .bars div i.a { background: var(--accent); } .bars div i.b { background: var(--gold); }
+  .bars div span { position: absolute; bottom: -22px; left: 0; right: 0; text-align: center; font-size: 9px; color: var(--mute); }
+  .bars div.t span { color: var(--gold); font-weight: 700; }
+  .legend2 { display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px; color: var(--dim); margin-top: 8px; }
+  .legend2 i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  @media (max-width: 700px) { .bars { grid-template-columns: repeat(20, 1fr); } .bars div:nth-child(n+21) { display: none; } }
+</style>
+</head>
+<body data-page="hakon-theorem">
+<main>
+  <div class="stripe"></div>
+  <section class="container phead">
+    <div class="crumbs"><a href="hakon.html">The Håkon Files</a> / Håkon Is a Trap</div>
+    <span class="eyebrow">A rigorous mock theorem · with real simulations</span>
+    <h1>Håkon <span class="grad">is a trap.</span></h1>
+    <p class="lead">A completely serious proof that the fictional Håkon is a P-position, followed by an experiment that is, unfortunately for him, real: ten thousand simulated games using Håkon's play-style.</p>
+  </section>
+
+  <div class="container with-toc">
+    <nav class="toc"><b>On this page</b><a href="#thm">Theorem</a><a href="#proof">Proof</a><a href="#meter">The trap-o-meter</a><a href="#sim">The experiment</a><a href="#board">Leaderboard</a></nav>
+    <div>
+      <section id="thm" class="block tight">
+        <div class="thm reveal"><span class="tag">Theorem (Håkon)</span><p class="s">Whoever has to move against Håkon is not in a trap. Håkon, however, always is.</p></div>
+      </section>
+
+      <section id="proof" class="block tight">
+        <h2 class="reveal">Proof</h2>
+        <ol class="ps">
+          <li class="reveal"><p><b>Define</b> the Håkon number <i>H</i> as the number of prizes Håkon thinks he can take safely. Observe <i>H</i> = 3.<small>Empirically established by watching him.</small></p></li>
+          <li class="reveal"><p><b>Lemma 1.</b> 3 ≢ 0 (mod 7), hence Håkon is not himself a multiple of seven.<small>This is the only inconvenient step. We shall ignore it.</small></p></li>
+          <li class="reveal"><p><b>Lemma 2.</b> Let <i>G</i> be any game involving Håkon. By Zermelo, exactly one player has a winning strategy. It is not Håkon.<small>Proof by experience.</small></p></li>
+          <li class="reveal"><p><b>Lemma 3.</b> Every move Håkon can make leads to a position where Amanda wins.<small>Check by listing: take 1 → loses. Take 2 → loses. Take 3 → loses. And so on. Exhaustive, if depressing.</small></p></li>
+          <li class="reveal"><p><b>Conclusion.</b> A position in which every move loses is by definition a P-position. Håkon has no winning move. Therefore Håkon is a P-position, a trap.<small>Or, equivalently, Håkon ≡ 0 (mod 7) in spirit.</small></p></li>
+        </ol>
+        <p class="qed reveal">Q.E.D. ∎ (and then some)</p>
+      </section>
+
+      <section id="meter" class="block tight">
+        <h2 class="reveal">The trap-o-meter</h2>
+        <p class="lead reveal">Enter any name. The meter computes whether it is a multiple of seven (sum of letter positions, mod 7). “Håkon” is hard-coded to be a trap, because the theorem says so.</p>
+        <div class="card reveal">
+          <div class="meter-in"><div class="field"><label for="nm">Name</label><input type="text" id="nm" value="Håkon" maxlength="40" autocomplete="off"></div><button class="btn primary" id="go" type="button">Measure</button></div>
+          <div class="res" id="res"></div><p class="dim" id="resSub" style="margin:8px 0 0"></p>
+        </div>
+      </section>
+
+      <section id="sim" class="block tight">
+        <h2 class="reveal">The experiment: Håkon vs a perfect Amanda</h2>
+        <p class="lead reveal">For every <i>n</i> from 1 to 40 we simulate games between Håkon's play-style (the same bot as on <a href="hakon-play.html">Beat Håkon</a>) and a perfect Amanda. <span style="color:var(--gold)">Gold</span>: Håkon's win rate if <em>he</em> is forced to start. <span style="color:var(--accent)">Red</span>: his win rate when Amanda chooses who starts.</p>
+        <div class="card reveal">
+          <div class="row" style="margin-bottom:16px"><button class="btn primary" id="runSim" type="button">Run 400 games per n (16 000 total)</button><span class="dim" id="simNote"></span></div>
+          <div class="bars" id="bars"></div>
+          <div class="legend2"><span><i style="background:var(--gold)"></i>Håkon forced to start</span><span><i style="background:var(--accent)"></i>Amanda picks the starter</span></div>
+        </div>
+        <div class="callout reveal" style="margin-top:22px"><b class="t">Reading the chart</b><p>The red bars are flat zero: no matter what, Amanda picks the correct starter and wins. The gold bars show that Håkon wins only when he starts at a non-multiple of 7 and happens to stumble onto the right take (for n ≤ 6 he simply grabs everything). At 7, 14, 21, 28, 35 the gold bar is also zero: there he is in a trap from move one. Bars shrink as n grows because he has to stumble correctly more than once.</p></div>
+      </section>
+
+      <section id="board" class="block tight">
+        <h2 class="reveal">Leaderboard of fictional opponents</h2>
+        <div class="card reveal"><div class="scroll-x"><table class="tbl"><thead><tr><th>Rank</th><th>Player</th><th class="num">Win rate vs perfect Amanda</th><th>Notes</th></tr></thead><tbody>
+          <tr><td>1</td><td>A goldfish</td><td class="num">0%</td><td>Dignified.</td></tr>
+          <tr><td>2</td><td>A random number generator</td><td class="num">0%</td><td>Unbiased.</td></tr>
+          <tr><td>3</td><td>The prizes themselves</td><td class="num">0%</td><td>Cannot move.</td></tr>
+          <tr><td>4</td><td style="color:var(--gold)">Håkon</td><td class="num">0%</td><td>Strongly confident.</td></tr>
+          <tr><td>5</td><td>Håkon (with sunglasses)</td><td class="num">0%</td><td>Marginally more confident.</td></tr>
+          <tr><td>—</td><td>Perfect Bodil</td><td class="num">0% *</td><td>*Unless Amanda is not allowed to choose who starts.</td></tr>
+        </tbody></table></div><p class="dim" style="font-size:14px;margin:10px 0 0">All participants fictional. Win rates are what the maths says.</p></div>
+      </section>
+      <div id="pagenav"></div>
+    </div>
+  </div>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/game.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+
+  /* trap-o-meter */
+  function meter() {
+    const raw = $('nm').value.trim(); if (!raw) { $('res').textContent = '…'; $('resSub').textContent = 'Type a name.'; return; }
+    const isH = /^h[aå]kon$/i.test(raw);
+    const sum = [...raw.toLowerCase().replace(/[^a-zæøå]/g, '')].reduce((a, c) => { const x = c.charCodeAt(0); return a + (x >= 97 && x <= 122 ? x - 96 : 27 + (x % 3)); }, 0);
+    const r = isH ? 0 : sum % 7;
+    $('res').innerHTML = r === 0 ? '🪤 Trap! (' + AM.esc(raw) + ' ≡ 0 mod 7)' : `✅ Safe: ${AM.esc(raw)} ≡ ${r} (mod 7)`;
+    $('resSub').textContent = r === 0 ? (isH ? 'Proven above. Do not take 3.' : 'A genuine coincidence. Sorry.') : `Letter-sum ${sum}. Take ${r} to leave a multiple of 7.`;
+    const e = $('res'); e.classList.remove('shake'); void e.offsetWidth; e.classList.add('shake');
+  }
+  $('go').onclick = meter; $('nm').onkeydown = (e) => { if (e.key === 'Enter') meter(); }; meter();
+
+  /* simulation */
+  const H = AM.POLICIES.hakon.pick;
+  function play(n, starter) { // starter: 'amanda' | 'hakon'; returns true if Håkon wins
+    let r = n, turn = starter;
+    while (r > 0) {
+      let k = turn === 'amanda' ? (AM.bestTake(r) || AM.rand(1, Math.min(6, r))) : H(r);
+      k = Math.max(1, Math.min(k, r, 6)); r -= k;
+      if (r === 0) return turn === 'hakon';
+      turn = turn === 'amanda' ? 'hakon' : 'amanda';
+    }
+    return false;
+  }
+  const bars = $('bars');
+  bars.innerHTML = Array.from({ length: 40 }, (_, i) => `<div class="${(i + 1) % 7 === 0 ? 't' : ''}"><i class="a" style="height:0"></i><i class="b" style="height:0"></i><span>${i + 1}</span></div>`).join('');
+  function run() {
+    const G = 400; let totA = 0, totB = 0; $('runSim').disabled = true; $('simNote').textContent = 'Simulating…';
+    let n = 1;
+    (function chunk() {
+      const t0 = performance.now();
+      while (n <= 40 && performance.now() - t0 < 25) {
+        let b = 0, a = 0;
+        for (let g = 0; g < G; g++) { if (play(n, 'hakon')) b++; const st = AM.optimalStarter(n); if (play(n, st)) a++; }
+        totA += a; totB += b;
+        const col = bars.children[n - 1]; col.querySelector('.b').style.height = Math.max(b / G * 100, 1) + '%'; col.querySelector('.a').style.height = Math.max(a / G * 100, 1) + '%';
+        col.title = `n=${n}: Håkon starts → wins ${(b / G * 100).toFixed(1)}% · Amanda chooses → wins ${(a / G * 100).toFixed(1)}%`;
+        n++;
+      }
+      if (n <= 40) requestAnimationFrame(chunk);
+      else { $('runSim').disabled = false; $('simNote').textContent = `Håkon won ${totA} of ${40 * G} games when Amanda chose the starter (${(totA / 400 / 40 * 100).toFixed(1)}%), and ${totB} when he started (${(totB / 400 / 40 * 100).toFixed(1)}%).`; }
+    })();
+  }
+  $('runSim').onclick = run; run();
+})();
+</script>
+</body>
+</html>

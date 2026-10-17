@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generalize — Hjelp Amanda</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .ctl { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-end; }
+  .ctl .field { min-width: 220px; flex: 1; }
+  .big { font-family: var(--display); font-size: clamp(34px, 5vw, 64px); line-height: 1; color: var(--gold); }
+  .rule { font-family: var(--serif); font-size: clamp(22px, 2.6vw, 32px); line-height: 1.25; }
+  .hm-wrap { position: relative; }
+  #hm { width: 100%; height: auto; display: block; border-radius: 14px; background: #060812; cursor: crosshair; }
+  .hm-info { min-height: 52px; font-family: var(--mono); font-size: 14px; color: var(--dim); margin-top: 12px; }
+  .strip { display: flex; flex-wrap: wrap; gap: 4px; }
+  .strip i { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 12px; font-style: normal; font-variant-numeric: tabular-nums; }
+  .strip i.t { background: #14434b; color: #a9ecf5; border: 1px solid #38b6c4; }
+  .strip i.w { background: #3a2418; color: #ffcfa8; }
+  .plot { width: 100%; height: auto; display: block; }
+  .tl { display: grid; gap: 8px; font-family: var(--mono); font-size: 14px; }
+  .tl div { padding: 8px 12px; border-radius: 10px; background: rgba(255,255,255,.04); border: 1px solid var(--line); display: grid; grid-template-columns: 90px 1fr auto; gap: 12px; }
+  .tl .a { border-color: color-mix(in srgb, var(--gold) 50%, transparent); }
+  .tl .b { border-color: color-mix(in srgb, var(--sea) 50%, transparent); }
+</style>
+</head>
+<body data-page="generalize">
+<main>
+  <section class="container phead">
+    <div class="crumbs"><a href="index.html">Home</a> / Explore / Generalize</div>
+    <span class="eyebrow">What if “6” changed?</span>
+    <h1>Any limit, <span class="grad">same trick.</span></h1>
+    <p class="lead">The assignment says 1–6. But nothing about the argument cares: with a maximum take of <i>m</i>, the traps are the multiples of <i>m</i> + 1 and Amanda still wins every <i>n</i>. Move the sliders and see the rule rewrite itself.</p>
+  </section>
+
+  <div class="container with-toc">
+    <nav class="toc"><b>On this page</b><a href="#rule">The rule for any m</a><a href="#heat">Heatmap of m × n</a><a href="#random">If nobody chooses</a><a href="#trace">Sample game</a><a href="#why">Why it holds</a></nav>
+    <div>
+      <section id="rule" class="block tight">
+        <div class="card glow reveal">
+          <div class="ctl">
+            <div class="field"><label>Maximum take m <b id="mL" style="color:var(--gold)">6</b></label><input type="range" id="m" min="1" max="20" value="6"></div>
+            <div class="field"><label>Prizes n <b id="nL" style="color:var(--gold)">10</b></label><input type="range" id="n" min="1" max="120" value="10"></div>
+          </div>
+          <div class="grid g2" style="margin-top:26px;align-items:center">
+            <div>
+              <p class="rule" id="ruleTxt"></p>
+            </div>
+            <div class="stats" style="grid-template-columns:repeat(2,1fr)">
+              <div class="stat"><b id="sPer">7</b><span>period m + 1</span></div>
+              <div class="stat"><b id="sTrap">1</b><span>traps up to n</span></div>
+            </div>
+          </div>
+          <div style="margin-top:22px"><div class="strip" id="strip"></div>
+            <p class="dim" style="margin:14px 0 0;font-size:14px"><span class="chip sea">teal</span> trap (mover loses) · <span class="chip gold">amber</span> win (mover takes <i>n</i> mod (m+1))</p></div>
+        </div>
+      </section>
+
+      <section id="heat" class="block tight">
+        <h2 class="reveal">Every m, every n</h2>
+        <p class="lead reveal">Each row is a different maximum take; each column a number of prizes. Teal dots are traps. Row <i>m</i> has traps at columns that are multiples of <i>m</i> + 1; together they trace out a divisor sieve.</p>
+        <div class="card reveal">
+          <div class="hm-wrap"><canvas id="hm" width="1000" height="420"></canvas></div>
+          <div class="hm-info" id="hmInfo">Hover a cell.</div>
+        </div>
+      </section>
+
+      <section id="random" class="block tight">
+        <h2 class="reveal">If nobody chooses who starts</h2>
+        <p class="lead reveal">Amanda's real power in the task is picking the starter. Without it, a random first player wins when <i>n</i> is not a multiple of <i>m</i> + 1: probability about <i>m</i>/(<i>m</i> + 1).</p>
+        <div class="grid g2">
+          <div class="card reveal"><svg class="plot" id="plot" viewBox="0 0 520 280"></svg></div>
+          <div class="card reveal d1">
+            <span class="tag">Reading the curve</span>
+            <h3>Bigger m → more luck for the starter</h3>
+            <p class="dim">With m = 1 the game is just parity: half the time you start in a trap. With m = 6, the starter wins 6 times in 7 (86%). Great for the first player — but a good reason the assignment lets Amanda <em>decide</em> rather than toss a coin.</p>
+            <table class="tbl"><thead><tr><th>m</th><th class="num">Period</th><th class="num">Start wins</th></tr></thead><tbody id="ptab"></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <section id="trace" class="block tight">
+        <h2 class="reveal">A perfect game, any m</h2>
+        <div class="card reveal">
+          <div class="row" style="margin-bottom:16px"><span class="dim">Uses the sliders above.</span><button class="btn sm primary" id="again" type="button">New random Bodil</button></div>
+          <div class="tl" id="tl"></div>
+        </div>
+      </section>
+
+      <section id="why" class="block tight">
+        <h2 class="reveal">Why it holds for every m</h2>
+        <ol class="proofsteps" style="list-style:none;padding:0;display:grid;gap:14px">
+          <li class="card reveal"><b>Pairing.</b> If Bodil takes <i>k</i> ≤ m, Amanda takes (m + 1) − <i>k</i>, also between 1 and m. Every round removes exactly m + 1.</li>
+          <li class="card reveal"><b>Opening.</b> Amanda first takes <i>n</i> mod (m + 1), or lets Bodil start if that is 0.</li>
+          <li class="card reveal"><b>Ending.</b> Bodil always faces a positive multiple of m + 1 — never ≤ m, so she can't finish. Amanda can.</li>
+        </ol>
+        <div class="callout reveal"><b class="t">Next</b><p>Want odd allowed moves (only 1, 3 or 4…) or the book somewhere else? The <a href="variants.html">Variant Lab</a> solves arbitrary rule sets.</p></div>
+      </section>
+      <div id="pagenav"></div>
+    </div>
+  </div>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  let m = 6, n = Math.min(AM.getN(10), 120);
+  $('n').value = n; $('nL').textContent = n;
+  const strip = $('strip');
+
+  function rule() {
+    const p = m + 1, s = n % p;
+    $('mL').textContent = m; $('nL').textContent = n;
+    $('sPer').textContent = p; $('sTrap').textContent = Math.floor(n / p);
+    $('ruleTxt').innerHTML = s === 0
+      ? `With <i>n</i> = ${n} = ${p}·${n / p}, Amanda <b style="color:var(--sea-2)">lets Bodil start</b>. Whatever Bodil takes (<i>k</i>), Amanda answers ${p} − <i>k</i>.`
+      : `With <i>n</i> = ${n} = ${p}·${Math.floor(n / p)} + ${s}, Amanda <b style="color:var(--gold)">starts and takes ${s}</b>. Then she answers every Bodil take <i>k</i> with ${p} − <i>k</i>.`;
+    const cap = 120; let h = '';
+    for (let r = 1; r <= n && r <= cap; r++) h += `<i class="${r % p === 0 ? 't' : 'w'}" title="${r}: ${r % p === 0 ? 'trap' : 'take ' + (r % p)}">${r}</i>`;
+    strip.innerHTML = h;
+    trace();
+  }
+  function trace() {
+    const p = m + 1; let r = n; let who = (n % p === 0) ? 'bodil' : 'amanda'; const rows = [];
+    while (r > 0) {
+      let k;
+      if (who === 'amanda') k = (r % p) || Math.min(m, r); else k = AM.rand(1, Math.min(m, r));
+      if (who === 'amanda' && r % p === 0) k = 1; // unreachable for perfect play
+      rows.push(`<div class="${who === 'amanda' ? 'a' : 'b'}"><span>${AM.cap(who)}</span><span>takes ${k} from ${r}</span><span>→ ${r - k}${(r - k) % p === 0 && who === 'amanda' ? ' ✔ trap' : ''}</span></div>`);
+      r -= k; who = AM.other(who);
+    }
+    rows.push(`<div class="a"><span>Result</span><span>Amanda took the last prize: the book is hers 📖</span><span></span></div>`);
+    $('tl').innerHTML = rows.join('');
+  }
+  $('m').oninput = (e) => { m = +e.target.value; rule(); drawHm(); };
+  $('n').oninput = (e) => { n = +e.target.value; AM.setN(n); rule(); };
+  $('again').onclick = trace;
+
+  /* heatmap */
+  const cv = $('hm'), ctx = cv.getContext('2d'), MAXM = 20, NN = 120;
+  const cw = cv.width / NN, ch = cv.height / MAXM;
+  function drawHm() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    for (let mm = 1; mm <= MAXM; mm++) for (let r = 1; r <= NN; r++) {
+      const trap = r % (mm + 1) === 0; ctx.fillStyle = trap ? '#2fb4a0' : '#2a1b12';
+      ctx.fillRect((r - 1) * cw + 1, (mm - 1) * ch + 1, cw - 2, ch - 2);
+    }
+    ctx.strokeStyle = '#f2b84b'; ctx.lineWidth = 2; ctx.strokeRect(0, (m - 1) * ch, cv.width, ch);
+    ctx.fillStyle = '#f2b84b'; ctx.beginPath(); ctx.arc((Math.min(n, NN) - .5) * cw, (m - .5) * ch, 4, 0, 7); ctx.fill();
+  }
+  cv.addEventListener('mousemove', (e) => {
+    const b = cv.getBoundingClientRect(), x = (e.clientX - b.left) / b.width * NN, y = (e.clientY - b.top) / b.height * MAXM;
+    const r = Math.floor(x) + 1, mm = Math.floor(y) + 1; if (r < 1 || r > NN || mm < 1 || mm > MAXM) return;
+    const trap = r % (mm + 1) === 0;
+    $('hmInfo').innerHTML = `m = ${mm}, n = ${r} → <b style="color:${trap ? 'var(--sea-2)' : 'var(--gold)'}">${trap ? 'TRAP: Amanda lets Bodil start' : 'Amanda starts and takes ' + (r % (mm + 1))}</b>`;
+  });
+  cv.addEventListener('click', (e) => {
+    const b = cv.getBoundingClientRect(), x = (e.clientX - b.left) / b.width * NN, y = (e.clientY - b.top) / b.height * MAXM;
+    const r = Math.floor(x) + 1, mm = Math.floor(y) + 1; if (r < 1 || r > NN || mm < 1 || mm > MAXM) return;
+    m = mm; n = r; $('m').value = m; $('n').value = n; AM.setN(n); rule(); drawHm();
+  });
+
+  /* probability plot */
+  (function () {
+    const W = 520, H = 280, L = 44, B = 36, T = 14, R = 14, svg = $('plot'); let s = '';
+    const x = (mm) => L + (mm - 1) / 19 * (W - L - R), y = (v) => H - B - v * (H - B - T);
+    for (let g = 0; g <= 1; g += .25) s += `<line x1="${L}" x2="${W - R}" y1="${y(g)}" y2="${y(g)}" stroke="rgba(255,255,255,.08)"/><text x="${L - 8}" y="${y(g) + 4}" text-anchor="end" fill="#7f7c95" font-size="11">${Math.round(g * 100)}%</text>`;
+    let d = ''; for (let mm = 1; mm <= 20; mm++) d += (mm === 1 ? 'M' : 'L') + x(mm) + ' ' + y(mm / (mm + 1));
+    s += `<path d="${d}" fill="none" stroke="#f2b84b" stroke-width="3"/>`;
+    for (let mm = 1; mm <= 20; mm++) s += `<circle cx="${x(mm)}" cy="${y(mm / (mm + 1))}" r="${mm === 6 ? 7 : 3.5}" fill="${mm === 6 ? '#ee5a36' : '#f2b84b'}"/>` + (mm % 5 === 0 || mm === 1 || mm === 6 ? `<text x="${x(mm)}" y="${H - 14}" text-anchor="middle" fill="#7f7c95" font-size="11">m=${mm}</text>` : '');
+    s += `<text x="${x(6)}" y="${y(6 / 7) - 14}" text-anchor="middle" fill="#ee5a36" font-size="12">m = 6 → 86%</text>`;
+    svg.innerHTML = s;
+    $('ptab').innerHTML = [1, 2, 3, 4, 5, 6, 8, 10, 15, 20].map((mm) => `<tr${mm === 6 ? ' style="color:var(--gold)"' : ''}><td>${mm}${mm === 6 ? ' · task' : ''}</td><td class="num">${mm + 1}</td><td class="num">${(mm / (mm + 1) * 100).toFixed(1)}%</td></tr>`).join('');
+  })();
+
+  rule(); drawHm();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Graph — Hjelp Amanda</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .ctls { display: flex; flex-wrap: wrap; gap: 14px 26px; align-items: flex-end; margin-bottom: 16px; }
+  .gv { position: relative; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(5,8,20,.55); overflow-x: auto; }
+  .gv canvas { display: block; }
+  .tree { font-size: 15px; font-family: var(--mono); }
+  .tree details { margin-left: 22px; border-left: 1px solid var(--line); padding-left: 12px; }
+  .tree summary { cursor: pointer; padding: 3px 0; list-style: none; display: flex; gap: 8px; align-items: center; }
+  .tree summary::-webkit-details-marker { display: none; }
+  .tree summary::before { content: "▸"; color: var(--mute); width: 12px; }
+  .tree details[open] > summary::before { content: "▾"; }
+  .tree .leaf { margin-left: 22px; padding: 3px 0 3px 12px; border-left: 1px solid var(--line); display: flex; gap: 8px; }
+  .nd { padding: 1px 9px; border-radius: 8px; font-size: 13px; }
+  .nd.N { background: #3a2418; color: #ffcfa8; } .nd.P { background: #14434b; color: #a9ecf5; }
+  .mv-k { color: var(--mute); }
+  .mv-k.win { color: var(--gold); font-weight: 600; }
+  .tree-box { max-height: 520px; overflow: auto; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
+</style>
+</head>
+<body data-page="tree">
+<main>
+  <section class="container phead">
+    <div class="crumbs"><a href="index.html">Home</a> / Explore / Game Graph</div>
+    <span class="eyebrow">All moves, drawn</span>
+    <h1>The game <span class="grad">as a graph.</span></h1>
+    <p class="lead">Every position is a dot (the number of prizes left). Every legal take is an arc from a bigger dot to a smaller one. Gold arcs lead into traps: those are the winning moves. Isolate them and a very simple skeleton appears.</p>
+  </section>
+
+  <section class="container block tight">
+    <div class="ctls">
+      <div class="field"><label>Prizes n <span id="nLab">24</span></label><input type="range" id="gn" min="3" max="63" value="24"></div>
+      <div class="field"><label>Max take m <span id="mLab">6</span></label><input type="range" id="gm" min="1" max="9" value="6"></div>
+      <div class="field"><label>Show</label><div class="seg" id="mode"><button data-v="all" class="on" type="button">All moves</button><button data-v="win" type="button">Winning only</button></div></div>
+      <button class="btn sm primary" id="walk" type="button">▶ Walk a perfect game</button>
+    </div>
+    <div class="gv" id="gv"><canvas id="cv" height="440"></canvas></div>
+    <div class="row" style="margin-top:14px"><span class="legend"><span><i class="sw win"></i>winning position (N)</span><span><i class="sw lose"></i>trap (P)</span><span><i class="sw" style="background:#f2b84b"></i>winning move</span><span><i class="sw" style="background:#6b6485"></i>losing move</span></span></div>
+  </section>
+
+  <section class="container block tight">
+    <div class="stats reveal">
+      <div class="stat"><b id="sEdges">0</b><span>moves in total</span></div>
+      <div class="stat"><b id="sWin">0</b><span>winning moves</span></div>
+      <div class="stat"><b id="sTraps">0</b><span>trap positions</span></div>
+      <div class="stat"><b id="sPaths" style="font-size:30px">0</b><span>distinct ways the game can go</span></div>
+    </div>
+  </section>
+
+  <section class="container block tight">
+    <div class="g-split grid">
+      <div class="reveal">
+        <h2>The skeleton</h2>
+        <p class="dim">Switch to <b>Winning only</b>. Every non-trap dot has <em>exactly one</em> gold arc, going down to the next lower multiple of m + 1. Every trap dot has none. Following gold arcs from anywhere lands you on a trap, and then it is the opponent who has no gold move.</p>
+        <p class="dim">That skeleton <em>is</em> Amanda's strategy, drawn: when it's your turn on a gold-arc dot, follow the arc.</p>
+      </div>
+      <div class="reveal d1"><div class="card glow"><span class="tag">Inspect</span><div id="insp"><p class="dim" style="margin:0">Hover a dot in the diagram to see its moves. Click to expand it below.</p></div></div></div>
+    </div>
+  </section>
+
+  <section class="container block tight">
+    <h2 class="reveal">The full tree, from any position</h2>
+    <p class="lead reveal">Expand moves one at a time. Each branch is a take; node colour says who wins from there. The gold branch from an amber node is the one that keeps the win.</p>
+    <div class="row reveal" style="margin-bottom:14px"><div class="field"><label>Start tree at r =</label><input type="number" id="tr" value="10" min="1" max="30"></div></div>
+    <div class="tree-box tree reveal" id="tree"></div>
+  </section>
+  <section class="container block tight"><div id="pagenav"></div></section>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d'), box = $('gv');
+  const S = { n: 24, m: 6, mode: 'all', sel: -1, hover: -1, walkI: -1, sol: null, path: [] };
+
+  function X(r) { return S.pad + (S.n - r) * S.dx; }   // book side (0) on the right, big n on the left
+  function resize() {
+    const need = Math.max(box.clientWidth, (S.n + 1) * 34 + 60);
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    cv.style.width = need + 'px'; cv.width = need * dpr; cv.height = 440 * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    S.W = need; S.pad = 34; S.dx = (need - 68) / S.n;
+  }
+  function draw() {
+    const { n, m, sol } = S, base = 360;
+    ctx.clearRect(0, 0, S.W, 440);
+    /* arcs */
+    for (let r = 1; r <= n; r++) {
+      for (let k = 1; k <= m && k <= r; k++) {
+        const to = r - k, win = !sol.win[to]; // winning move = into a trap
+        if (S.mode === 'win' && !win) continue;
+        const x1 = X(r), x2 = X(to), mid = (x1 + x2) / 2, h = 26 + k * S.dx * 0.62 + (win ? 10 : 0);
+        const hl = S.hover === r || S.sel === r;
+        ctx.beginPath(); ctx.moveTo(x1, base); ctx.quadraticCurveTo(mid, base - h * 1.6, x2, base);
+        if (win) { ctx.strokeStyle = hl ? '#ffe0a1' : 'rgba(242,184,75,.85)'; ctx.lineWidth = hl ? 3.4 : 2.2; }
+        else { ctx.strokeStyle = hl ? 'rgba(200,190,230,.8)' : 'rgba(120,110,160,.22)'; ctx.lineWidth = hl ? 1.8 : 1; }
+        ctx.stroke();
+      }
+    }
+    /* walk path */
+    if (S.walkI >= 0) {
+      ctx.strokeStyle = '#56d6a0'; ctx.lineWidth = 4;
+      for (let i = 0; i < Math.min(S.walkI, S.path.length); i++) {
+        const st = S.path[i], x1 = X(st.from), x2 = X(st.to), mid = (x1 + x2) / 2, h = 26 + st.k * S.dx * 0.62 + 10;
+        ctx.beginPath(); ctx.moveTo(x1, base); ctx.quadraticCurveTo(mid, base - h * 1.6, x2, base); ctx.stroke();
+      }
+    }
+    /* nodes */
+    for (let r = 0; r <= n; r++) {
+      const x = X(r), trap = !sol.win[r], rad = Math.max(7, Math.min(15, S.dx * 0.42));
+      ctx.beginPath(); ctx.arc(x, base, rad, 0, 7);
+      ctx.fillStyle = trap ? '#14434b' : '#3a2418'; ctx.fill();
+      ctx.lineWidth = (S.sel === r || S.hover === r) ? 3 : 1.5; ctx.strokeStyle = (S.sel === r || S.hover === r) ? '#f2b84b' : (trap ? '#38b6c4' : '#a85a2c'); ctx.stroke();
+      ctx.fillStyle = trap ? '#a9ecf5' : '#ffcfa8'; ctx.font = `${Math.max(9, Math.min(13, rad * 0.9))}px Outfit, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(r, x, base + 1);
+    }
+    ctx.fillStyle = '#7f7c95'; ctx.font = '12px Outfit, sans-serif'; ctx.textAlign = 'center';
+    ctx.textAlign = 'right'; ctx.fillText('0 · nothing left', X(0) + 10, base + 38);
+    ctx.textAlign = 'left'; ctx.fillText(`${n} · start`, X(n) - 10, base + 38); ctx.textAlign = 'center';
+    if (S.walkI >= 0 && S.walkI <= S.path.length) {
+      const cur = S.walkI === 0 ? S.n : S.path[S.walkI - 1].to; ctx.fillStyle = '#56d6a0'; ctx.beginPath(); ctx.arc(X(cur), base + 62, 8, 0, 7); ctx.fill();
+      ctx.fillStyle = '#b9b4c6'; ctx.fillText('now', X(cur), base + 84);
+    }
+  }
+  function nodeAt(e) {
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    if (Math.abs(y - 360) > 24) return -1;
+    let best = -1, bd = 1e9; for (let k = 0; k <= S.n; k++) { const d = Math.abs(X(k) - x); if (d < bd) { bd = d; best = k; } }
+    return bd < Math.max(10, S.dx * 0.5) ? best : -1;
+  }
+  function inspect(r) {
+    if (r < 0) return; const sol = S.sol, m = S.m;
+    let html = `<h3 style="margin-bottom:6px">r = ${r} <span class="nd ${sol.win[r] ? 'N' : 'P'}">${r === 0 ? 'done' : sol.win[r] ? 'winning' : 'trap'}</span></h3>`;
+    if (r === 0) html += '<p class="dim" style="margin:0">The line is clear. The player who just moved took the book.</p>';
+    else {
+      html += '<div class="scroll-x"><table class="tbl"><tr><th>take</th><th>leaves</th><th>result for opponent</th></tr>';
+      for (let k = 1; k <= m && k <= r; k++) { const to = r - k, good = !sol.win[to]; html += `<tr><td>${k}</td><td>${to}</td><td>${to === 0 ? 'nothing left — <b style="color:var(--gold)">you take the book</b>' : (good ? '<b style="color:var(--gold)">opponent in a trap ✔</b>' : 'opponent can win')}</td></tr>`; }
+      html += '</table></div>';
+    }
+    $('insp').innerHTML = html;
+  }
+  function stats() {
+    const { n, m, sol } = S; let e = 0, w = 0, t = 0;
+    for (let r = 1; r <= n; r++) for (let k = 1; k <= m && k <= r; k++) { e++; if (!sol.win[r - k]) w++; }
+    for (let r = 1; r <= n; r++) if (!sol.win[r]) t++;
+    const paths = [1n]; for (let r = 1; r <= n; r++) { let s = 0n; for (let k = 1; k <= m && k <= r; k++) s += paths[r - k]; paths.push(s); }
+    $('sEdges').textContent = e; $('sWin').textContent = w; $('sTraps').textContent = t;
+    const ps = paths[n].toString(); $('sPaths').textContent = ps.length > 12 ? ps[0] + '.' + ps.slice(1, 3) + '×10^' + (ps.length - 1) : Number(ps).toLocaleString();
+  }
+  function recompute() {
+    S.n = +$('gn').value; S.m = +$('gm').value; $('nLab').textContent = S.n; $('mLab').textContent = S.m;
+    S.sol = AM.solve(AM.range(S.m), S.n); S.sel = -1; S.walkI = -1; S.path = []; resize(); draw(); stats();
+    $('insp').innerHTML = '<p class="dim" style="margin:0">Hover a dot in the diagram to see its moves. Click to expand it below.</p>';
+  }
+  $('gn').oninput = recompute; $('gm').oninput = recompute;
+  $('mode').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; S.mode = b.dataset.v; document.querySelectorAll('#mode button').forEach((x) => x.classList.toggle('on', x === b)); draw(); };
+  cv.addEventListener('mousemove', (e) => { const r = nodeAt(e); if (r !== S.hover) { S.hover = r; draw(); if (r >= 0) inspect(r); } cv.style.cursor = r >= 0 ? 'pointer' : 'default'; });
+  cv.addEventListener('mouseleave', () => { S.hover = -1; draw(); });
+  cv.addEventListener('click', (e) => { const r = nodeAt(e); if (r > 0) { S.sel = r; inspect(r); draw(); $('tr').value = Math.min(30, r); buildTree(); } });
+  let wt;
+  $('walk').onclick = () => {
+    clearInterval(wt); const { n, m, sol } = S;
+    let r = n, turn = AM.optimalStarter(n, m); S.path = [];
+    while (r > 0) { let k = sol.good[r][0]; if (!k) k = AM.rand(1, Math.min(m, r)); S.path.push({ k, from: r, to: r - k, who: turn }); r -= k; turn = AM.other(turn); }
+    S.walkI = 0; draw();
+    wt = setInterval(() => { S.walkI++; draw(); if (S.walkI > S.path.length) { clearInterval(wt); AM.toast('Amanda takes the book'); } }, 520);
+  };
+
+  /* lazy tree */
+  function nodeHTML(r) {
+    const sol = S.sol2, win = sol.win[r];
+    return `<span class="nd ${win ? 'N' : 'P'}">${r}</span>`;
+  }
+  function childrenOf(r) { const sol = S.sol2, m = S.m; const out = []; for (let k = 1; k <= m && k <= r; k++) out.push({ k, to: r - k, win: !sol.win[r - k] }); return out; }
+  function mk(r, k, win) {
+    const sol = S.sol2;
+    if (r === 0) { const d = document.createElement('div'); d.className = 'leaf'; d.innerHTML = `<span class="mv-k ${win ? 'win' : ''}">−${k}</span>${nodeHTML(0)} <span class="dim">line clear · book taken</span>`; return d; }
+    const det = document.createElement('details');
+    det.innerHTML = `<summary><span class="mv-k ${win ? 'win' : ''}">${k ? '−' + k : ''}</span>${nodeHTML(r)}<span class="dim">${sol.win[r] ? 'mover wins' : 'mover loses'}</span></summary>`;
+    let done = false;
+    det.addEventListener('toggle', () => { if (det.open && !done) { done = true; childrenOf(r).forEach((c) => det.appendChild(mk(c.to, c.k, c.win))); } });
+    return det;
+  }
+  function buildTree() {
+    const r = Math.max(1, Math.min(30, +$('tr').value || 10)); S.sol2 = AM.solve(AM.range(S.m), 30);
+    const root = $('tree'); root.innerHTML = ''; const d = mk(r, 0, false); d.style.marginLeft = '0'; d.style.border = '0'; d.style.paddingLeft = '0'; root.appendChild(d); d.open = true; d.dispatchEvent(new Event('toggle'));
+  }
+  $('tr').oninput = buildTree; $('gm').addEventListener('input', buildTree);
+  addEventListener('resize', () => { resize(); draw(); });
+  recompute(); buildTree();
+})();
+</script>
+</body>
+</html>

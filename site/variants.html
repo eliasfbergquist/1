@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Variant Lab — Hjelp Amanda</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .takes { display: flex; flex-wrap: wrap; gap: 8px; }
+  .takes button { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line-2); background: rgba(255,255,255,.04); color: var(--dim); font-size: 16px; font-variant-numeric: tabular-nums; }
+  .takes button.on { background: var(--gold); color: #14110e; border-color: transparent; font-weight: 600; }
+  .takes button[disabled] { opacity: .85; cursor: not-allowed; }
+  .lab { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 28px; align-items: start; }
+  .lab .panel { display: grid; gap: 22px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; }
+  .strip { display: flex; flex-wrap: wrap; gap: 4px; }
+  .strip i { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-size: 12px; font-style: normal; font-variant-numeric: tabular-nums; position: relative; }
+  .strip i.t { background: #14434b; color: #a9ecf5; border: 1px solid #38b6c4; }
+  .strip i.w { background: #3a2418; color: #ffcfa8; }
+  .strip i.cur { box-shadow: 0 0 0 2px var(--gold); }
+  .strip i.pre { outline: 1px dashed rgba(255,255,255,.35); outline-offset: 1px; }
+  .verdict { font-family: var(--serif); font-size: clamp(22px, 2.6vw, 32px); line-height: 1.25; }
+  .per { display: flex; gap: 14px; flex-wrap: wrap; }
+  @media (max-width: 900px) { .lab { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-page="variants">
+<main>
+  <section class="container phead">
+    <div class="crumbs"><a href="index.html">Home</a> / Explore / Variant Lab</div>
+    <span class="eyebrow">Break the rules, keep the maths</span>
+    <h1>The <span class="grad">Variant Lab.</span></h1>
+    <p class="lead">Pick any set of allowed takes, move the book, or turn the game inside out (whoever takes the book loses). The lab solves it exactly by backward induction and tells you who should start, what to take, and whether a pattern emerges.</p>
+  </section>
+
+  <section class="container block tight">
+    <div class="lab">
+      <div class="card panel">
+        <div class="field"><label>Allowed takes (1 is always allowed)</label><div class="takes" id="takes"></div></div>
+        <div class="field"><label>Presets</label><div class="presets" id="pre"></div></div>
+        <div class="field"><label>Prizes n <b id="nL" style="color:var(--gold)"></b></label><input type="range" id="n" min="1" max="200" value="10"></div>
+        <div class="field"><label>Book position p <b id="pL" style="color:var(--gold)"></b> <span class="dim" style="font-size:12px">(1 = front, as in the task)</span></label><input type="range" id="p" min="1" max="10" value="1"></div>
+        <label class="check"><input type="checkbox" id="mis"> Misère: taking the book is bad (you lose)</label>
+      </div>
+
+      <div style="display:grid;gap:22px;min-width:0">
+        <div class="card glow">
+          <span class="tag">Verdict</span>
+          <p class="verdict" id="verdict"></p>
+          <div class="per" id="facts"></div>
+        </div>
+        <div class="card">
+          <span class="tag">Positions (distance from the book + 1)</span>
+          <div class="strip" id="strip"></div>
+          <p class="dim" style="margin:14px 0 0;font-size:14px"><span class="chip sea">teal</span> trap · <span class="chip gold">amber</span> mover wins · dashed outline = before the pattern settles</p>
+        </div>
+        <div class="card">
+          <span class="tag">Winning takes by position</span>
+          <div class="scroll-x" style="max-height:260px;overflow-y:auto"><table class="tbl"><thead><tr><th>Position</th><th>Type</th><th>Winning takes</th></tr></thead><tbody id="rows"></tbody></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container block tight">
+    <h2 class="reveal">What the lab teaches</h2>
+    <div class="grid g3">
+      <div class="card reveal"><span class="ic">🔁</span><h3>Periodic, eventually</h3><p class="dim">Each position depends only on the last max(S) positions, so the win/lose pattern must repeat. Try {1,3,4}: period 7, but with two traps per period. Try {1,2,5}: the extra “5” is useless and the period collapses to 3.</p></div>
+      <div class="card reveal d1"><span class="ic">📍</span><h3>The book can move</h3><p class="dim">A book at position <i>p</i> means only the top n − p + 1 prizes matter: it is the same game with a smaller n. The first-player trap shifts accordingly.</p></div>
+      <div class="card reveal d2"><span class="ic">🙃</span><h3>Misère flips the script</h3><p class="dim">When the last take loses, the trap positions shift by one (for the plain 1–6 game: positions ≡ 1 mod 7). Amanda still wins any n, since she picks the starter.</p></div>
+    </div>
+  </section>
+  <section class="container block tight"><div id="pagenav"></div></section>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const MAXK = 14;
+  const S = { takes: new Set([1, 2, 3, 4, 5, 6]), n: Math.min(AM.getN(10), 200), p: 1, mis: false };
+  const PRESETS = [
+    ['The task {1…6}', [1, 2, 3, 4, 5, 6]], ['Only 1 or 2', [1, 2]], ['{1, 3, 4}', [1, 3, 4]], ['{1, 2, 5}', [1, 2, 5]],
+    ['Odd {1, 3, 5}', [1, 3, 5]], ['Powers of 2', [1, 2, 4, 8]], ['Fibonacci', [1, 2, 3, 5, 8, 13]], ['Squares', [1, 4, 9]],
+  ];
+  $('pre').innerHTML = PRESETS.map((x, i) => `<button class="btn sm" type="button" data-i="${i}">${x[0]}</button>`).join('');
+  $('takes').innerHTML = Array.from({ length: MAXK }, (_, i) => `<button type="button" data-k="${i + 1}" ${i === 0 ? 'disabled' : ''}>${i + 1}</button>`).join('');
+  $('takes').onclick = (e) => { const b = e.target.closest('button'); if (!b || b.disabled) return; const k = +b.dataset.k; S.takes.has(k) ? S.takes.delete(k) : S.takes.add(k); run(); };
+  $('pre').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; S.takes = new Set(PRESETS[+b.dataset.i][1]); run(); };
+  $('n').oninput = (e) => { S.n = +e.target.value; AM.setN(S.n); run(); };
+  $('p').oninput = (e) => { S.p = +e.target.value; run(); };
+  $('mis').onchange = (e) => { S.mis = e.target.checked; run(); };
+
+  /* Solve on r' = (prizes at or above the book) = r − p + 1. A take k leaves r' − k.
+     If k ≥ r' (and k ≤ r) the mover takes the book. Normal play: that wins. Misère: that loses. */
+  function solve(T, P, N, mis) {
+    const win = [false], good = [[]];
+    for (let r = 1; r <= N; r++) {
+      const g = [], line = r + P - 1;
+      for (const k of T) {
+        if (k > line) break;
+        const takesBook = k >= r;
+        const wins = takesBook ? !mis : !win[r - k];
+        if (wins) g.push(k);
+      }
+      good[r] = g; win[r] = g.length > 0;
+    }
+    return { win, good };
+  }
+
+  function run() {
+    S.takes.add(1);
+    const T = [...S.takes].sort((a, b) => a - b);
+    $('takes').querySelectorAll('button').forEach((b) => b.classList.toggle('on', S.takes.has(+b.dataset.k)));
+    $('p').max = S.n; if (S.p > S.n) S.p = S.n; $('p').value = S.p;
+    $('n').value = S.n; $('nL').textContent = S.n; $('pL').textContent = S.p;
+    const n = S.n, P = S.p, eff = n - P + 1;
+    const NN = Math.max(210, eff + 20);
+    /* `real` honours the book position (it caps takes by the real line length); `base` is the clean pattern with the book at the front */
+    const real = solve(T, P, Math.max(eff, 1), S.mis);
+    const base = solve(T, 1, NN, S.mis);
+    const per = AM.period(base.win.slice(1).map((x) => !!x));
+    const startWin = real.win[eff];
+    const opening = real.good[eff];
+    let verdict;
+    if (startWin) verdict = `Amanda should <b style="color:var(--gold)">start</b> and take ${opening.length > 1 ? 'any of ' + opening.join(' / ') : opening[0]}.`;
+    else verdict = `Amanda should <b style="color:var(--sea-2)">let Bodil start</b>: every opening loses for the starter.`;
+    verdict += ` <span class="dim" style="font-size:.7em">Taking the book ${S.mis ? 'loses' : 'wins'}${P > 1 ? ' · the book is prize ' + P : ''}.</span>`;
+    $('verdict').innerHTML = verdict;
+    const traps = []; for (let r = 1; r <= NN && traps.length < 8; r++) if (!base.win[r]) traps.push(r);
+    $('facts').innerHTML = [
+      per ? `<span class="chip gold">Period ${per.period}${per.pre ? ', after ' + per.pre + ' positions' : ''}</span>` : '<span class="chip">Period: not found up to 210</span>',
+      `<span class="chip">Takes: {${T.join(', ')}}</span>`,
+      `<span class="chip">Effective n = ${eff}</span>`,
+      `<span class="chip sea">First traps: ${traps.length ? traps.join(', ') + (traps.length === 8 ? ', …' : '') : 'none'}</span>`,
+    ].join('');
+    const show = Math.min(NN, 140);
+    $('strip').innerHTML = Array.from({ length: show }, (_, i) => { const r = i + 1; return `<i class="${base.win[r] ? 'w' : 't'}${r === eff ? ' cur' : ''}${per && r <= per.pre ? ' pre' : ''}" title="${r}: ${base.win[r] ? 'win — take ' + base.good[r].join('/') : 'trap'}">${r}</i>`; }).join('');
+    $('rows').innerHTML = Array.from({ length: Math.min(40, NN) }, (_, i) => { const r = i + 1; return `<tr><td class="num">${r}</td><td>${base.win[r] ? '<span class="chip gold">win</span>' : '<span class="chip sea">trap</span>'}</td><td>${base.good[r].join(', ') || '—'}</td></tr>`; }).join('');
+  }
+  run();
+})();
+</script>
+</body>
+</html>

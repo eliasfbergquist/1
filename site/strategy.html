@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Strategy — Hjelp Amanda</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .flow { width: 100%; height: auto; }
+  .flow text { font-family: var(--sans); fill: var(--ink); }
+  .flow .box { fill: rgba(255,255,255,.05); stroke: var(--line-2); }
+  .flow .yes { fill: rgba(86,214,160,.12); stroke: var(--good); }
+  .flow .no { fill: rgba(242,184,75,.12); stroke: var(--gold); }
+  .flow path { stroke: var(--line-2); fill: none; stroke-width: 2; }
+  .decision { display: grid; grid-template-columns: auto 1fr; gap: 22px; align-items: center; }
+  .decision .big { font-family: var(--display); font-size: clamp(60px, 9vw, 110px); line-height: .85; color: var(--gold); }
+  .rounds { display: grid; gap: 8px; margin-top: 18px; }
+  .rd { display: grid; grid-template-columns: 90px 1fr 70px; gap: 12px; align-items: center; }
+  .rd .lbl2 { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+  .rd .bar2 { display: flex; height: 38px; border-radius: 10px; overflow: hidden; background: rgba(255,255,255,.04); }
+  .seg-a, .seg-b { display: grid; place-items: center; font-weight: 600; font-size: 14px; color: #14110e; transition: width .6s cubic-bezier(.2,.8,.2,1); min-width: 0; overflow: hidden; }
+  .seg-a { background: linear-gradient(135deg, #f2b84b, #ee5a36); } .seg-b { background: linear-gradient(135deg, #8fe3ec, #38b6c4); }
+  .rd .tot { font-family: var(--serif); font-size: 18px; color: var(--gold-2); text-align: right; }
+  .machine { display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: center; text-align: center; }
+  .machine .side { padding: 20px; border: 1px solid var(--line); border-radius: 18px; background: var(--card); }
+  .machine .side b { display: block; font-family: var(--display); font-size: 80px; line-height: 1; }
+  .machine .arrow { font-size: 36px; color: var(--gold); }
+  .kbtns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+  .kbtns button { width: 50px; height: 50px; border-radius: 14px; border: 1px solid var(--line-2); background: var(--bg-2); font-family: var(--display); font-size: 24px; }
+  .kbtns button.on { background: var(--sea); color: #04222a; border-color: transparent; }
+  .pairrow { display: flex; height: 26px; border-radius: 8px; overflow: hidden; margin-top: 14px; }
+  .mistake { padding: 20px; }
+  .mistake .x { font-size: 26px; display: block; margin-bottom: 8px; }
+  .bigout { font-family: var(--serif); font-size: 20px; color: var(--gold-2); font-style: italic; min-height: 3.2em; }
+  @media (max-width: 860px) { .machine { grid-template-columns: 1fr; } .machine .arrow { transform: rotate(90deg); } .rd { grid-template-columns: 70px 1fr 56px; } }
+</style>
+</head>
+<body data-page="strategy">
+<main>
+  <section class="container phead">
+    <div class="crumbs"><a href="index.html">Home</a> / Solve / The Strategy</div>
+    <span class="eyebrow">Exactly what Amanda does</span>
+    <h1>One number: <span class="grad">seven.</span></h1>
+    <p class="lead">The largest take is 6, so every pair of moves (one by each player) can be made to remove exactly <b>6 + 1 = 7</b> prizes. Amanda's whole job is to keep the remaining count a multiple of 7 after each of her turns.</p>
+  </section>
+
+  <div class="container with-toc">
+    <nav class="toc"><b>On this page</b><a href="#plan">The plan</a><a href="#you">Your n</a><a href="#machine">Answer machine</a><a href="#telling">Perfect tellings</a><a href="#huge">Huge numbers</a><a href="#mistakes">Common mistakes</a><a href="#cheat">Cheat sheet</a></nav>
+    <div>
+      <section id="plan" class="block tight">
+        <h2 class="reveal">The plan in one picture</h2>
+        <div class="card reveal" style="padding:26px">
+          <svg class="flow" viewBox="0 0 900 330" role="img" aria-label="Flowchart of Amanda's plan">
+            <rect class="box" x="20" y="130" width="170" height="70" rx="16"/><text x="105" y="162" text-anchor="middle" font-size="20" font-weight="600">Read n</text><text x="105" y="184" text-anchor="middle" font-size="14" fill="#b9b4c6" style="fill:#b9b4c6">how many prizes?</text>
+            <path d="M190 165H250"/>
+            <rect class="box" x="250" y="130" width="190" height="70" rx="16"/><text x="345" y="162" text-anchor="middle" font-size="20" font-weight="600">r = n mod 7</text><text x="345" y="184" text-anchor="middle" font-size="14" style="fill:#b9b4c6">remainder after ÷ 7</text>
+            <path d="M440 150C490 150 500 80 550 80"/><path d="M440 180C490 180 500 250 550 250"/>
+            <rect class="yes" x="550" y="35" width="330" height="90" rx="16"/><text x="715" y="64" text-anchor="middle" font-size="16" style="fill:#56d6a0;font-weight:600;letter-spacing:.12em">r = 0</text><text x="715" y="92" text-anchor="middle" font-size="20" font-weight="600">Let Bodil start</text><text x="715" y="113" text-anchor="middle" font-size="14" style="fill:#b9b4c6">then answer her k with 7 − k</text>
+            <rect class="no" x="550" y="205" width="330" height="90" rx="16"/><text x="715" y="234" text-anchor="middle" font-size="16" style="fill:#f2b84b;font-weight:600;letter-spacing:.12em">r = 1 … 6</text><text x="715" y="262" text-anchor="middle" font-size="20" font-weight="600">Amanda starts: take r</text><text x="715" y="283" text-anchor="middle" font-size="14" style="fill:#b9b4c6">then answer k with 7 − k</text>
+          </svg>
+          <p class="dim" style="margin:16px 0 0">When 6 or fewer prizes remain at Amanda's turn, she takes them all — the book is among them. The plan guarantees this moment arrives on her turn, never Bodil's.</p>
+        </div>
+      </section>
+
+      <section id="you" class="block tight">
+        <h2 class="reveal">Your number of prizes</h2>
+        <div class="card glow reveal">
+          <div class="row" style="margin-bottom:18px"><div class="field"><label>n =</label><input type="number" id="sn" min="1" max="200" value="10"></div><input type="range" id="sr" min="1" max="200" value="10"><button class="btn sm" id="reroll" type="button">🎲 Re-roll Bodil</button></div>
+          <div class="decision">
+            <div class="big" id="dBig">3</div>
+            <div><h3 id="dTitle"></h3><p class="dim" id="dText" style="margin:0"></p></div>
+          </div>
+          <div class="rounds" id="rounds"></div>
+          <p class="dim" id="rNote" style="margin:16px 0 0;font-size:15px"></p>
+        </div>
+      </section>
+
+      <section id="machine" class="block tight">
+        <h2 class="reveal">The answer machine</h2>
+        <p class="lead reveal">Once Amanda has made her opening choice, her play is mechanical. Pick whatever Bodil took: the machine tells you the reply.</p>
+        <div class="card reveal">
+          <div class="machine">
+            <div class="side"><span class="lbl">Bodil took</span><b id="mK" style="color:var(--sea-2)">4</b><div class="kbtns" id="kb"></div></div>
+            <div class="arrow">→</div>
+            <div class="side"><span class="lbl">Amanda replies with</span><b id="mR" style="color:var(--gold)">3</b><p class="dim" style="margin:6px 0 0" id="mSum">4 + 3 = 7</p></div>
+          </div>
+          <div class="pairrow" id="pr"></div>
+        </div>
+      </section>
+
+      <section id="telling" class="block tight">
+        <h2 class="reveal">Perfect tellings</h2>
+        <p class="lead reveal">Click an example to load it above, or watch these four run for different shapes of <i>n</i>.</p>
+        <div class="grid g4" id="ex"></div>
+      </section>
+
+      <section id="huge" class="block tight">
+        <h2 class="reveal">It works for absurdly large n</h2>
+        <div class="card reveal">
+          <p class="dim">Type any whole number (up to 300 digits). The plan only needs <i>n</i> mod 7, so the answer is instant.</p>
+          <div class="row"><input type="text" id="bigIn" value="1000000" style="width:min(520px,100%)" inputmode="numeric"><div class="row" id="bigPre"></div></div>
+          <p class="bigout" id="bigOut" style="margin:18px 0 0"></p>
+        </div>
+      </section>
+
+      <section id="mistakes" class="block tight">
+        <h2 class="reveal">Common mistakes</h2>
+        <div class="grid g3">
+          <div class="card mistake reveal"><span class="x">🙅</span><h4>Starting when n is a multiple of 7</h4><p class="dim">You hand Bodil the whole plan. With 7, 14, 21… the first player is the one in trouble.</p></div>
+          <div class="card mistake reveal d1"><span class="x">🧮</span><h4>Taking the wrong remainder</h4><p class="dim">The opening take is <i>n</i> mod 7, not <i>n</i> − 7. For n = 20 that is 6, leaving 14.</p></div>
+          <div class="card mistake reveal d2"><span class="x">🏁</span><h4>Forgetting to finish</h4><p class="dim">If 6 or fewer remain on your turn, take them all. The "7 − k" rule is for when more remain than you can take.</p></div>
+        </div>
+      </section>
+
+      <section id="cheat" class="block tight">
+        <h2 class="reveal">Cheat sheet</h2>
+        <div class="grid g2">
+          <div class="card reveal"><h3>Opening</h3><div class="scroll-x"><table class="tbl"><tr><th>n mod 7</th><th>Who starts</th><th>First take</th></tr>
+            <tr><td>0</td><td>Bodil</td><td>— (she must break the multiple)</td></tr>
+            <tr><td>1</td><td>Amanda</td><td>1</td></tr><tr><td>2</td><td>Amanda</td><td>2</td></tr><tr><td>3</td><td>Amanda</td><td>3</td></tr>
+            <tr><td>4</td><td>Amanda</td><td>4</td></tr><tr><td>5</td><td>Amanda</td><td>5</td></tr><tr><td>6</td><td>Amanda</td><td>6</td></tr></table></div></div>
+          <div class="card reveal d1"><h3>Reply</h3><div class="scroll-x"><table class="tbl"><tr><th>Bodil took</th><th>Amanda takes</th><th>Together</th></tr>
+            <tr><td>1</td><td>6</td><td>7</td></tr><tr><td>2</td><td>5</td><td>7</td></tr><tr><td>3</td><td>4</td><td>7</td></tr>
+            <tr><td>4</td><td>3</td><td>7</td></tr><tr><td>5</td><td>2</td><td>7</td></tr><tr><td>6</td><td>1</td><td>7</td></tr></table></div>
+            <p class="dim" style="margin-top:14px;font-size:15px">Exception: if the take would leave nothing (6 or fewer remain), take everything.</p></div>
+        </div>
+        <div class="callout reveal"><b class="t">Want the why?</b><p>The <a href="proof.html">proof page</a> shows, by induction, that this plan can't fail, and brute-forces every n up to 5,000 as a sanity check.</p></div>
+      </section>
+      <div id="pagenav"></div>
+    </div>
+  </div>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  let n = AM.getN(10);
+  function seg(cls, k, total) { return `<div class="${cls}" style="width:${(k / total) * 100}%">${k}</div>`; }
+  function draw() {
+    n = Math.max(1, Math.min(200, Math.round(+$('sn').value) || 10)); $('sn').value = n; $('sr').value = n; AM.setN(n);
+    const r = n % 7, start = AM.optimalStarter(n);
+    $('dBig').textContent = r === 0 ? '0' : r;
+    $('dTitle').textContent = r === 0 ? 'Let Bodil start.' : (n <= 6 ? `Start, and take all ${n}.` : `Start, and take ${r}.`);
+    $('dText').textContent = r === 0 ? `${n} = 7 × ${n / 7}. Whatever Bodil takes, Amanda takes 7 minus that.` : `${n} = 7 × ${Math.floor(n / 7)} + ${r}. Take ${r}, leaving ${n - r} = 7 × ${(n - r) / 7}${n <= 6 ? ' (nothing: the line is clear and the book is yours)' : ''}.`;
+    /* random Bodil trap moves */
+    let rem = n, turn = start; const rows = []; let guard = 0;
+    while (rem > 0 && guard++ < 400) {
+      let k = AM.bestTake(rem);
+      if (k == null) k = AM.rand(1, Math.min(6, rem));
+      rows.push({ who: turn, k, from: rem }); rem -= k; turn = AM.other(turn);
+    }
+    const holder = AM.other(turn);
+    let html = ''; let i = 0;
+    const show = rows.length > 16 ? rows.slice(0, 8).concat([null], rows.slice(-6)) : rows;
+    for (const rw of show) {
+      if (!rw) { html += `<div class="rd"><span class="lbl2">…</span><div class="mute" style="text-align:center">${rows.length - 14} more moves, each pair removing 7</div><span class="tot"></span></div>`; continue; }
+      html += `<div class="rd"><span class="lbl2">${AM.cap(rw.who)}</span><div class="bar2">${seg(rw.who === 'amanda' ? 'seg-a' : 'seg-b', rw.k, 7)}<div style="flex:1"></div></div><span class="tot">${rw.from} → ${rw.from - rw.k}</span></div>`;
+    }
+    $('rounds').innerHTML = html;
+    $('rNote').innerHTML = `The bar's full width is 7. Every Bodil/Amanda pair fills it exactly. ${holder === 'amanda' ? '<b style="color:var(--good)">Amanda takes the final group, and the book.</b>' : '<b style="color:var(--bad)">Bodil takes the book!</b>'}`;
+  }
+  $('sn').addEventListener('input', draw); $('sr').addEventListener('input', (e) => { $('sn').value = e.target.value; draw(); }); $('reroll').onclick = draw;
+  $('sn').value = n; draw();
+
+  /* answer machine */
+  let k = 4;
+  $('kb').innerHTML = [1, 2, 3, 4, 5, 6].map((x) => `<button type="button" data-k="${x}" class="${x === k ? 'on' : ''}">${x}</button>`).join('');
+  function mach() {
+    $('mK').textContent = k; $('mR').textContent = 7 - k; $('mSum').textContent = `${k} + ${7 - k} = 7`;
+    $('pr').innerHTML = `<div class="seg-b" style="width:${k / 7 * 100}%">${k}</div><div class="seg-a" style="width:${(7 - k) / 7 * 100}%">${7 - k}</div>`;
+    $('kb').querySelectorAll('button').forEach((b) => b.classList.toggle('on', +b.dataset.k === k));
+  }
+  $('kb').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { k = +b.dataset.k; mach(); } });
+  mach();
+
+  /* examples */
+  const ex = [
+    { n: 10, t: 'n = 10', d: 'Open with 3 → 7 left.' }, { n: 14, t: 'n = 14', d: 'Multiple of 7: Bodil opens.' },
+    { n: 25, t: 'n = 25', d: 'Open with 4 → 21 left.' }, { n: 100, t: 'n = 100', d: 'Open with 2 → 98 left.' },
+  ];
+  $('ex').innerHTML = ex.map((e, i) => `<a class="card reveal d${i % 3}" href="#you" data-n="${e.n}" style="padding:20px"><span class="tag">${e.t}</span><h3>${e.n % 7 === 0 ? 'Bodil starts' : 'Take ' + (e.n % 7)}</h3><p class="dim" style="margin:0;font-size:15px">${e.d}</p></a>`).join('');
+  $('ex').addEventListener('click', (e) => { const c = e.target.closest('[data-n]'); if (c) { $('sn').value = c.dataset.n; draw(); } });
+  AM.reveal();
+
+  /* huge numbers */
+  const pre = ['1000000', '123456789123456789', '7'.repeat(40), '1' + '0'.repeat(50)];
+  $('bigPre').innerHTML = pre.map((p) => `<button class="chip" type="button" data-v="${p}">${p.length > 14 ? p.slice(0, 11) + '…' : p}</button>`).join('');
+  $('bigPre').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { $('bigIn').value = b.dataset.v; big(); } });
+  function big() {
+    const s = $('bigIn').value.replace(/[\s,_]/g, '');
+    if (!/^\d{1,300}$/.test(s) || /^0+$/.test(s)) { $('bigOut').textContent = 'Enter a positive whole number (digits only, up to 300).'; return; }
+    const N = BigInt(s), r = Number(N % 7n), rounds = (N - BigInt(r)) / 7n;
+    const f = (x) => x.toLocaleString === undefined ? String(x) : String(x).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    $('bigOut').innerHTML = r === 0n || r === 0 ? `n mod 7 = 0, so Amanda lets Bodil start. The game lasts exactly ${f(rounds)} rounds of “k and 7 − k”, and Amanda makes the last take.`
+      : `n mod 7 = ${r}. Amanda starts and takes ${r}, then the game is ${f(rounds)} rounds of “k and 7 − k”, and Amanda makes the last take.`;
+  }
+  $('bigIn').addEventListener('input', big); big();
+})();
+</script>
+</body>
+</html>

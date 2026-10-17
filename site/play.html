@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play the Game — Hjelp Amanda</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .challenge { display: flex; gap: 14px; align-items: flex-start; padding: 18px 20px; cursor: pointer; }
+  .challenge:hover { border-color: var(--gold); }
+  .challenge .ic { font-size: 28px; }
+  .challenge h4 { margin: 0 0 2px; }
+  .challenge p { margin: 0; color: var(--dim); font-size: 15px; }
+  .challenge.done { border-color: var(--good); }
+  .challenge.done h4::after { content: " ✓"; color: var(--good); }
+</style>
+</head>
+<body data-page="play">
+<main>
+  <section class="container phead" style="padding-bottom:10px">
+    <div class="crumbs"><a href="index.html">Home</a> / Solve / Play the Game</div>
+    <span class="eyebrow">2D · quick &amp; clear</span>
+    <h1>Play it <span class="grad">yourself.</span></h1>
+    <p class="lead">Click the end of the line (or press 1–6) to take prizes. Be Amanda and keep the book, be Bodil and try to steal it, or just watch perfect play. Prefer a more immersive version? <a href="play3d.html">Play in 3D →</a></p>
+  </section>
+  <section class="container block tight">
+    <div class="card" style="padding:24px"><div id="game"></div></div>
+  </section>
+  <section class="container block tight">
+    <div class="g-split grid" style="align-items:start">
+      <div class="reveal">
+        <h2>Challenges</h2>
+        <p class="dim">Click one to load it. Complete it to tick it off — progress is saved in your browser.</p>
+        <div class="stack" id="ch"></div>
+      </div>
+      <div class="reveal d1">
+        <div class="card glow">
+          <span class="tag">Coach</span>
+          <h3>What to look for</h3>
+          <ul class="dim" style="padding-left:20px;margin:0">
+            <li>The <b>ring</b> in the middle shows the remaining prizes mod 7. A glowing 0 means a trap.</li>
+            <li>The line is drawn in <b>groups of seven from the book</b>. A full last group is a trap, a partial one tells you how many to take.</li>
+            <li>The star ★ on the start buttons shows Amanda's best opener.</li>
+            <li>Turn off the winning-take hint and see if you can still spot it.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="container block tight"><div id="pagenav"></div></section>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/game.js"></script>
+<script>
+(function () {
+  const done = new Set(JSON.parse(localStorage.getItem('amanda.challenges') || '[]'));
+  const CH = [
+    { id: 'c1', ic: '🍬', t: 'Warm-up: n = 4', d: 'Be Amanda with 4 prizes. Start and take them all.', cfg: { n: 4, mode: 'amanda', starter: 'amanda', opp: 'perfect' }, ok: (r) => r.humanWon },
+    { id: 'c2', ic: '📖', t: 'The assignment example: n = 10', d: 'Be Amanda against perfect play. Open with 3, then answer k with 7 − k.', cfg: { n: 10, mode: 'amanda', starter: 'amanda', opp: 'perfect' }, ok: (r) => r.humanWon },
+    { id: 'c3', ic: '🪤', t: 'Let her start: n = 14', d: 'Be Amanda and let Bodil begin. Beat perfect play.', cfg: { n: 14, mode: 'amanda', starter: 'bodil', opp: 'perfect' }, ok: (r) => r.humanWon },
+    { id: 'c4', ic: '🌊', t: 'A long one: n = 37', d: '37 = 7×5 + 2. Open with 2. Win against a perfect Bodil.', cfg: { n: 37, mode: 'amanda', starter: 'amanda', opp: 'perfect' }, ok: (r) => r.humanWon },
+    { id: 'c5', ic: '🥷', t: 'Steal it as Bodil: n = 20', d: 'You are Bodil against a random Amanda. She must slip: take the book when she does.', cfg: { n: 20, mode: 'bodil', starter: 'amanda', opp: 'random' }, ok: (r) => r.humanWon },
+  ];
+  let ctl;
+  function render() {
+    document.getElementById('ch').innerHTML = CH.map((c) => `<div class="card challenge ${done.has(c.id) ? 'done' : ''}" data-id="${c.id}"><span class="ic">${c.ic}</span><div><h4>${c.t}</h4><p>${c.d}</p></div></div>`).join('');
+  }
+  let active = null;
+  ctl = AM.mountGame(document.getElementById('game'), { n: AM.getN(10), mode: 'amanda', maxN: 60,
+    onEnd: (r) => {
+      if (active && active.ok(r)) { done.add(active.id); localStorage.setItem('amanda.challenges', JSON.stringify([...done])); render(); AM.toast('Challenge complete: ' + active.t); }
+    } });
+  document.getElementById('ch').addEventListener('click', (e) => {
+    const el = e.target.closest('.challenge'); if (!el) return;
+    active = CH.find((c) => c.id === el.dataset.id);
+    ctl.setOpts({ ...active.cfg, n: active.cfg.n });
+    scrollTo({ top: 120, behavior: 'smooth' });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

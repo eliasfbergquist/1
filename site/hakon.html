@@ -1,0 +1,122 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Håkon Files — Hjelp Amanda</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .hero-h { font-size: clamp(72px, 15vw, 220px); line-height: 1.12; margin: 46px 0 6px; color: var(--gold); }
+  .tick { background: var(--accent); color: #fff; font-family: var(--display); letter-spacing: .04em; text-transform: uppercase; padding: 10px 0; overflow: hidden; border-block: 3px solid #000; }
+  .tick-in { display: flex; gap: 60px; width: max-content; animation: mq 60s linear infinite; font-size: 20px; white-space: nowrap; }
+  .tick-in span::before { content: "● "; color: var(--gold); }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 50px; align-items: center; }
+  .poster h2 { line-height: 1.2; margin-top: 6px; }
+  .poster .row2 { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 13px; margin-top: 8px; }
+  .poster ul { font-family: var(--mono); font-size: 13px; padding-left: 18px; margin: 10px 0; }
+  .threat { display: grid; gap: 16px; }
+  .threat .line { display: grid; grid-template-columns: 170px 1fr 54px; gap: 14px; align-items: center; font-size: 15px; }
+  .threat .line b { font-family: var(--mono); text-align: right; color: var(--gold); }
+  .provoke { text-align: center; padding: 36px 20px; }
+  .provoke .out { font-family: var(--display); text-transform: uppercase; font-size: clamp(22px, 3.4vw, 40px); min-height: 2.4em; line-height: 1.1; color: var(--gold); margin: 18px auto 0; max-width: 20em; }
+  @media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; } .threat .line { grid-template-columns: 110px 1fr 46px; } }
+</style>
+</head>
+<body data-page="hakon">
+<main>
+  <div class="stripe"></div>
+  <div class="tick"><div class="tick-in" id="tick"></div></div>
+
+  <section class="container block tight">
+    <div class="hero-grid">
+      <div>
+        <div class="crumbs"><a href="index.html">Home</a> / Håkon / Case file</div>
+        <span class="eyebrow">⚠ Classified · Fictional</span>
+        <h1 class="hero-h glitch" data-t="HÅKON">HÅKON</h1>
+        <p class="lead">The made-up nemesis of every sensible strategy. Loses at multiples of seven. Believes he is “just unlucky”. This is his file. It is entirely fictional, entirely silly, and entirely unfair.</p>
+        <div class="row" style="margin-top:22px"><a class="btn primary" href="hakon-play.html">🥊 Beat Håkon</a><a class="btn" href="hakon-charges.html">⚖️ Read the charges</a><a class="btn" href="hakon-box.html">🔔 Box him</a><a class="btn" href="hakon-trial.html">🔨 Spin the wheel</a></div>
+      </div>
+      <div>
+        <div class="poster reveal">
+          <div class="sub">Wanted for crimes against arithmetic</div>
+          <h2>Håkon</h2>
+          <div class="face">🧌</div>
+          <div class="reward">Reward: one (1) book 📖</div>
+          <ul>
+            <li>Last seen taking exactly 3 prizes, again</li>
+            <li>Armed with: confidence</li>
+            <li>Does not know what “mod 7” is</li>
+            <li>Answers to: “The Starter”</li>
+          </ul>
+          <div class="row2"><span>CASE № 7·14·21</span><span>ISSUED: MGMT4100</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container block tight">
+    <h2 class="reveal">Threat assessment</h2>
+    <div class="card threat reveal" id="threat"></div>
+    <p class="dim" style="font-size:14px;margin-top:10px">Methodology: invented on the spot. Accuracy: roughly 7%.</p>
+  </section>
+
+  <section class="container block tight">
+    <div class="stats">
+      <div class="stat reveal"><b data-count="100" data-suf="%">0</b><span>Games Håkon loses against a perfect Amanda</span></div>
+      <div class="stat reveal d1"><b data-count="14">0</b><span>Positions where he starts and is already doomed (n ≤ 98)</span></div>
+      <div class="stat reveal d2"><b data-count="0">0</b><span>Times he said “wait, is it a multiple of seven?”</span></div>
+      <div class="stat reveal d3"><b id="losses" data-count="0">0</b><span>Times <em>you</em> have beaten him here</span></div>
+    </div>
+  </section>
+
+  <section class="container block tight">
+    <div class="card provoke glow reveal" id="prov">
+      <span class="tag">Interactive</span>
+      <h3>Provoke Håkon</h3>
+      <p class="dim">Press the button. Receive an excuse.</p>
+      <button class="btn primary" id="provBtn" type="button">Tell Håkon he lost</button>
+      <div class="out" id="provOut">…</div>
+    </div>
+  </section>
+
+  <section class="container block tight">
+    <h2 class="reveal">The rest of the file</h2>
+    <div class="grid g2">
+      <a class="card reveal" href="hakon-charges.html"><span class="ic">⚖️</span><h3>Charges</h3><p class="dim">Twenty-odd offences, severity-rated. Add your own.</p></a>
+      <a class="card reveal d1" href="hakon-play.html"><span class="ic">🥊</span><h3>Beat Håkon</h3><p class="dim">The real game against a bot with Håkon's strategy: confident and wrong.</p></a>
+      <a class="card reveal" href="hakon-trial.html"><span class="ic">🔨</span><h3>The Tribunal</h3><p class="dim">Spin the wheel of sentencing. Every outcome is cruel but fair.</p></a>
+      <a class="card reveal" href="hakon-box.html" style="grid-column:1/-1"><span class="ic">🔔</span><h3>Boxing Ring</h3><p class="dim">Step into the ring: a first-person boxing game. Read his tell, dodge, count to three, land the Seven.</p></a>`n      <a class="card reveal d1" href="hakon-theorem.html"><span class="ic">🪤</span><h3>Håkon Is a Trap</h3><p class="dim">A mock proof that Håkon ≡ 0 (mod 7). Q.E.D. and then some.</p></a>
+    </div>
+  </section>
+
+  <section class="container block tight">
+    <div class="callout"><b class="t">Disclaimer, in the interest of everyone's evening</b><p>“Håkon” is a fictional character created for this page. Any resemblance to a real person named Håkon is a coincidence, and anyone who does recognise him is invited to show him the page and laugh with him, not at him. The maths pages are the serious ones.</p></div>
+    <div id="pagenav"></div>
+  </section>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/layout.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const NEWS = ['BREAKING: Håkon starts game with n = 14, takes 3, immediately regrets it', 'Håkon denies being a multiple of seven', 'Local man still believes “taking the most is good”', 'Experts confirm: Håkon is, in fact, the trap', 'Håkon requests rematch, loses rematch', 'Study finds Håkon’s strategy equivalent to “vibes”', 'Håkon blames the prizes', 'Book remains uncollected, Håkon blames the book', 'Håkon’s favourite number revealed: not 7, the other one', 'Weather: cloudy with a 6/7 chance of Håkon losing'];
+  $('tick').innerHTML = [...NEWS, ...NEWS].map((s) => `<span>${s}</span>`).join('');
+
+  const T = [['Strategy', 8], ['Arithmetic', 3], ['Confidence', 97], ['Self-awareness', 11], ['Excuses', 94], ['Threat to Amanda', 0]];
+  $('threat').innerHTML = T.map(([k, v]) => `<div class="line"><span>${k}</span><div class="meter"><i data-w="${v}"></i></div><b>${v}%</b></div>`).join('');
+  setTimeout(() => document.querySelectorAll('.meter > i').forEach((i) => i.style.width = i.dataset.w + '%'), 400);
+
+  const losses = +(localStorage.getItem('hakon.losses') || 0);
+  document.querySelectorAll('[data-count]').forEach((el) => {
+    const v = el.id === 'losses' ? losses : +el.dataset.count;
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { AM.count(el, v, 1100, (x) => Math.round(x) + (el.dataset.suf || '')); io.disconnect(); } }));
+    io.observe(el);
+  });
+
+  const EX = ['“The prizes were rigged.”', '“I was warming up.”', '“Seven is a stupid number anyway.”', '“Amanda cheated by being correct.”', '“I let her win. Strategically.”', '“The line was the wrong length.”', '“I demand a recount of the prizes.”', '“That’s not how I remember the rules.”', '“It was a practice game. For ten years.”', '“Technically I lost, practically I won.”', '“My computer lagged. I don’t have a computer.”', '“Ask me again after lunch.”'];
+  let i = -1;
+  $('provBtn').onclick = () => { let j; do { j = Math.floor(Math.random() * EX.length); } while (j === i); i = j; $('provOut').textContent = EX[j]; const p = $('prov'); p.classList.remove('shake'); void p.offsetWidth; p.classList.add('shake'); };
+})();
+</script>
+</body>
+</html>
